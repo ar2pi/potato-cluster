@@ -2,7 +2,7 @@
 
 [ar2p2.grafana.net](https://ar2p2.grafana.net/) | [K8s metrics status](https://ar2p2.grafana.net/a/grafana-k8s-app/configuration/metrics-status)
 
-Local experiments to feed telemetry into Grafana Cloud.
+Local Kubernetes potato cluster and telemetry generator for Grafana Cloud demos.
 
 Prerequisites: [docker](https://www.docker.com), [kind](https://kind.sigs.k8s.io), [k9s](https://k9scli.io), [helm](https://helm.sh)
 
