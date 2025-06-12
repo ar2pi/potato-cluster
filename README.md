@@ -1,4 +1,4 @@
-# ar2p2
+# potato-cluster
 
 [ar2p2.grafana.net](https://ar2p2.grafana.net/) | [K8s metrics status](https://ar2p2.grafana.net/a/grafana-k8s-app/configuration/metrics-status)
 
