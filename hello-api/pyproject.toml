@@ -1,0 +1,25 @@
+[project]
+name = "hello-api"
+version = "0.1.0"
+description = ""
+authors = [{ name = "Arthur Picerna", email = "hello@ar2pi.net" }]
+requires-python = ">=3.13.2"
+dependencies = [
+    "fastapi (>=0.115.11,<0.116.0)",
+    "uvicorn (>=0.34.0,<0.35.0)",
+    "opentelemetry-distro (>=0.51b0,<0.52)",
+    "opentelemetry-exporter-otlp (>=1.30.0,<2.0.0)",
+    "opentelemetry-instrumentation-fastapi (>=0.51b0,<0.52)",
+]
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+mypy = "^1.15.0"
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

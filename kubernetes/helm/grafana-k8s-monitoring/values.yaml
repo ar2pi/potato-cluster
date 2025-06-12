@@ -1,0 +1,188 @@
+cluster:
+  name: potato
+
+destinations:
+  - name: grafana-cloud-metrics
+    type: prometheus
+    url: $GRAFANA_METRICS_URL
+    auth:
+      type: basic
+      username: "$GRAFANA_METRICS_USER"
+      password: $GRAFANA_ACCESS_TOKEN
+  - name: grafana-cloud-logs
+    type: loki
+    url: $GRAFANA_LOGS_URL
+    auth:
+      type: basic
+      username: "$GRAFANA_LOGS_USER"
+      password: $GRAFANA_ACCESS_TOKEN
+  - name: grafana-cloud-otlp-endpoint
+    type: otlp
+    url: $GRAFANA_OTLP_URL
+    protocol: http
+    auth:
+      type: basic
+      username: "$GRAFANA_OTLP_USER"
+      password: $GRAFANA_ACCESS_TOKEN
+    metrics:
+      enabled: true
+    logs:
+      enabled: true
+    traces:
+      enabled: true
+  - name: grafana-cloud-profiles
+    type: pyroscope
+    url: $GRAFANA_PROFILES_URL
+    auth:
+      type: basic
+      username: "$GRAFANA_PROFILES_USER"
+      password: $GRAFANA_ACCESS_TOKEN
+
+clusterMetrics:
+  enabled: true
+  opencost:
+    enabled: true
+    metricsSource: grafana-cloud-metrics
+    opencost:
+      exporter:
+        defaultClusterId: potato
+      prometheus:
+        existingSecretName: grafana-cloud-metrics-grafana-k8s-monitoring
+        external:
+          url: $GRAFANA_CLUSTER_METRICS_URL
+  kepler:
+    enabled: true
+
+annotationAutodiscovery:
+  enabled: true
+
+prometheusOperatorObjects:
+  enabled: true
+
+clusterEvents:
+  enabled: true
+
+nodeLogs:
+  enabled: true
+  journal:
+    path: /run/log/journal
+
+podLogs:
+  enabled: true
+
+applicationObservability:
+  enabled: true
+  receivers:
+    otlp:
+      grpc:
+        enabled: true
+        port: 4317
+      http:
+        enabled: true
+        port: 4318
+    zipkin:
+      enabled: true
+      port: 9411
+  connectors:
+    grafanaCloudMetrics:
+      enabled: true
+
+# careful when running beyla alongside otel-demo
+autoInstrumentation:
+  enabled: false
+  preset: application
+  beyla:
+    config:
+      data:
+        attributes:
+          kubernetes:
+            cluster_name: kind-observons
+            enable: true
+        # https://grafana.com/docs/beyla/latest/configure/service-discovery/
+        discovery:
+          exclude_otel_instrumented_services: false
+          exclude_services:
+          - exe_path: .*alloy.*|.*otelcol.*|.*beyla.*
+          - k8s_namespace: .*kube.*|.*monitoring.*|.*otel-demo.*
+          services:
+          - k8s_namespace: .*hello-api.*
+        filter:
+          network:
+            k8s_dst_owner_name:
+              not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}'
+            k8s_src_owner_name:
+              not_match: '{kube*,*jaeger-agent*,*prometheus*,*promtail*,*grafana-agent*}'
+        internal_metrics:
+          prometheus:
+            path: /internal/metrics
+            port: 9090
+        otel_traces_export:
+          endpoint: http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:4317
+          # https://grafana.com/docs/beyla/latest/configure/sample-traces/
+          sampler:
+            name: "traceidratio"
+            arg: "0.1"
+        prometheus_export:
+          features:
+          - application
+          - network
+          - application_service_graph
+          - application_span
+          path: /metrics
+          port: 9090
+
+profiling:
+  enabled: true
+
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+            - alloy-singleton
+            - alloy-logs
+            - alloy-receiver
+            - alloy-profiles
+
+alloy-metrics:
+  enabled: true
+
+alloy-singleton:
+  enabled: true
+
+alloy-logs:
+  enabled: true
+  alloy:
+    mounts:
+      extra:
+        - name: var-log-journal
+          mountPath: /run/log/journal
+  controller:
+    volumes:
+      extra:
+        - name: var-log-journal
+          hostPath:
+            path: /run/log/journal
+            type: DirectoryOrCreate
+
+alloy-receiver:
+  enabled: true
+  alloy:
+    extraPorts:
+      - name: otlp-grpc
+        port: 4317
+        targetPort: 4317
+        protocol: TCP
+      - name: otlp-http
+        port: 4318
+        targetPort: 4318
+        protocol: TCP
+      - name: zipkin
+        port: 9411
+        targetPort: 9411
+        protocol: TCP
+
+alloy-profiles:
+  enabled: true

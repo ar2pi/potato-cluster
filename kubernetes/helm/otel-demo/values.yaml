@@ -1,0 +1,121 @@
+# https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-demo/README.md
+
+default:
+  envOverrides:
+    # - name: OTEL_COLLECTOR_NAME
+    #   value: grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: 'service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo-grafana-cloud,service.version={{ .Chart.AppVersion }}'
+
+prometheus:
+  enabled: false
+
+opensearch:
+  enabled: false
+
+jaeger:
+  enabled: false
+
+# https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-demo/values.yaml
+opentelemetry-collector:
+  config:
+    receivers:
+      otlp:
+        protocols:
+          http:
+            # Since this collector needs to receive data from the web, enable cors for all origins
+            # `allowed_origins` can be refined for your deployment domain
+            cors:
+              allowed_origins:
+                - "http://*"
+                - "https://*"
+      httpcheck/frontend-proxy:
+        targets:
+          - endpoint: http://frontend-proxy:8080
+      redis:
+        endpoint: "valkey-cart:6379"
+        collection_interval: 10s
+
+    exporters:
+      ## Create an exporter to Jaeger using the standard `otlp` export format
+      # otlp:
+      #   endpoint: jaeger-collector:4317
+      #   tls:
+      #     insecure: true
+      ## Create an exporter to Alloy receiver using the standard `otlp` export format
+      otlp/alloy:
+        endpoint: http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:4317
+        tls:
+          insecure: true
+      # https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/zipkinexporter/README.md
+      # zipkin/alloy:
+      #   endpoint: http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:9411/api/v2/spans
+      #   # endpoint: http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:9411
+      #   tls:
+      #     insecure: true
+        # format: json
+      # Create an exporter to Prometheus (metrics)
+      # otlphttp/prometheus:
+      #   endpoint: http://prometheus:9090/api/v1/otlp
+      #   tls:
+      #     insecure: true
+      # opensearch:
+      #   logs_index: otel
+      #   http:
+      #     endpoint: http://opensearch:9200
+      #     tls:
+      #       insecure: true
+
+    processors:
+      # This processor is used to help limit high cardinality on next.js span names
+      # When this PR is merged (and released) we can remove this transform processor
+      # https://github.com/vercel/next.js/pull/64852
+      transform:
+        error_mode: ignore
+        trace_statements:
+          - context: span
+            statements:
+              # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
+              - replace_pattern(name, "\\?.*", "")
+              - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
+      resource:
+        attributes:
+        - key: service.instance.id
+          from_attribute: k8s.pod.uid
+          action: insert
+
+      # 1% sampler for traces and logs
+      # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/probabilisticsamplerprocessor
+      probabilistic_sampler:
+        sampling_percentage: 1
+
+    connectors:
+      spanmetrics: {}
+
+    service:
+      pipelines:
+        traces:
+          processors: [memory_limiter, resource, transform, batch, probabilistic_sampler]
+          # exporters: [otlp, debug, spanmetrics]
+          exporters: [otlp/alloy, debug, spanmetrics]
+        metrics:
+          receivers: [httpcheck/frontend-proxy, redis, otlp, spanmetrics]
+          processors: [memory_limiter, resource, batch]
+          # exporters: [otlphttp/prometheus, debug]
+          exporters: [otlp/alloy, debug]
+        logs:
+          processors: [memory_limiter, resource, batch, probabilistic_sampler]
+          # exporters: [opensearch, debug]
+          exporters: [otlp/alloy, debug]
+
+      telemetry:
+        metrics:
+          level: detailed
+          readers:
+            - periodic:
+                interval: 10000
+                timeout: 5000
+                exporter:
+                  otlp:
+                    protocol: grpc
+                    endpoint: otel-collector:4318

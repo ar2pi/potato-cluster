@@ -1,0 +1,4 @@
+default:
+  envOverrides:
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: 'service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo-local,service.version={{ .Chart.AppVersion }}'

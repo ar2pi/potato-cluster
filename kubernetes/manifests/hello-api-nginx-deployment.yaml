@@ -1,0 +1,103 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-reverse-proxy
+  namespace: hello-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-reverse-proxy
+  template:
+    metadata:
+      labels:
+        app: nginx-reverse-proxy
+      annotations:
+        k8s.grafana.com/scrape: "true"
+        k8s.grafana.com/metrics.path: /metrics
+        k8s.grafana.com/metrics.portNumber: "9113"
+        k8s.grafana.com/metrics.scrapeInterval: "60s"
+        k8s.grafana.com/job: "hello-api/nginx-reverse-proxy"
+    spec:
+      containers:
+        # NGINX Reverse Proxy Container
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+          # resources:
+          #   requests:
+          #     cpu: "100m"
+          #     memory: "128Mi"
+          #   limits:
+          #     cpu: "500m"
+          #     memory: "512Mi"
+
+        # Prometheus NGINX Exporter Sidecar
+        - name: nginx-exporter
+          image: nginx/nginx-prometheus-exporter:latest
+          args:
+            - '-nginx.scrape-uri=http://localhost:8000/stub_status'
+          ports:
+            - containerPort: 9113
+          # resources:
+          #   requests:
+          #     cpu: "50m"
+          #     memory: "64Mi"
+          #   limits:
+          #     cpu: "100m"
+          #     memory: "128Mi"
+
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: hello-api
+data:
+  default.conf: |
+    server {
+        listen 8000;
+
+        location / {
+            proxy_pass http://hello-api:8000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            proxy_connect_timeout 1s;
+            proxy_read_timeout 5s;
+            proxy_send_timeout 5s;
+        }
+
+        location /stub_status {
+            stub_status;
+            allow 127.0.0.1;
+            deny all;
+        }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-reverse-proxy
+  namespace: hello-api
+  labels:
+    app: nginx-reverse-proxy
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx-reverse-proxy
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
