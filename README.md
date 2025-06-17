@@ -15,7 +15,7 @@ Launch a multi-node k8s cluster.
 - Node 3: worker 2
 
 ```sh
-kind create cluster --config kubernetes/config.yaml
+kind create cluster --config kubernetes/potato-cluster-config.yaml
 
 # check the running nodes
 k9s -c nodes
@@ -56,7 +56,7 @@ export $(cat kubernetes/helm/grafana-k8s-monitoring/.env | xargs)
 helm upgrade --install --atomic --timeout 300s -n monitoring --create-namespace grafana-k8s-monitoring grafana/k8s-monitoring \
   -f <(envsubst < kubernetes/helm/grafana-k8s-monitoring/values.yaml)
 
-# issue since v2.1 might need to rerun the install / delete alloy-* subcharts manually
+# issue since v2.1 might need to rerun the install to deploy missing alloy-* resources
 # https://github.com/grafana/k8s-monitoring-helm/issues/1615
 
 # check the running pods in the monitoring namespace
@@ -89,11 +89,11 @@ k9s -n noisy-neighborhood -c pods
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 
 # helm upgrade --install --create-namespace -n otel-demo-local -f kubernetes/helm/otel-demo/values-local.yaml otel-demo-local open-telemetry/opentelemetry-demo
-helm upgrade --install --create-namespace -n otel-demo-grafana-cloud -f kubernetes/helm/otel-demo/values.yaml otel-demo-grafana-cloud open-telemetry/opentelemetry-demo
+helm upgrade --install --create-namespace -n otel-demo -f kubernetes/helm/otel-demo/values.yaml otel-demo open-telemetry/opentelemetry-demo
 
 # check the running deployments
 # k9s -n otel-demo-local -c deploy
-k9s -n otel-demo-grafana-cloud -c deploy
+k9s -n otel-demo -c deploy
 
 # port forward the frontend-proxy
 # open http://localhost:8080
@@ -168,11 +168,17 @@ k9s -n hello-api -c pods
 kubectl delete --ignore-not-found -f kubernetes/manifests/hello-api-deployment.yaml -f kubernetes/manifests/noisy-neighborhood-pods.yaml
 helm uninstall -n otel-demo --ignore-not-found otel-demo
 helm uninstall -n monitoring --ignore-not-found grafana-k8s-monitoring
+# issue since v2.1 might need to remove alloy-* subcharts manually
+# https://github.com/grafana/k8s-monitoring-helm/issues/1615
 helm uninstall -n monitoring --ignore-not-found grafana-k8s-monitoring-alloy-logs grafana-k8s-monitoring-alloy-metrics grafana-k8s-monitoring-alloy-profiles grafana-k8s-monitoring-alloy-receiver grafana-k8s-monitoring-alloy-singleton
-kind delete cluster --name observons
+kind delete cluster --name potato
 ```
 
 ## Additional resources
 
-- [https://play.grafana.org/]
-- [https://grafana.com/grafana/dashboards/]
+- [play.grafana.org](https://play.grafana.org/)
+- [grafana.com/grafana/dashboards](https://grafana.com/grafana/dashboards/)
+
+## @TODO:
+
+- [ ] why this query no workey `{cluster="potato", service_name="frontend-proxy", service_namespace="otel-demo"}`, is otel demo missing labels?

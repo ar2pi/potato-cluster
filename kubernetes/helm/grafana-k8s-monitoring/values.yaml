@@ -96,7 +96,7 @@ autoInstrumentation:
       data:
         attributes:
           kubernetes:
-            cluster_name: kind-observons
+            cluster_name: potato
             enable: true
         # https://grafana.com/docs/beyla/latest/configure/service-discovery/
         discovery:
@@ -183,6 +183,23 @@ alloy-receiver:
         port: 9411
         targetPort: 9411
         protocol: TCP
+    config:
+      logs:
+        labels:
+          - name: service_name
+            from_attribute: service.name
+          - name: service_namespace
+            from_attribute: service.namespace
+          - name: cluster
+            from_attribute: k8s.cluster.name
+      traces:
+        labels:
+          - name: service_name
+            from_attribute: service.name
+          - name: service_namespace
+            from_attribute: service.namespace
+          - name: cluster
+            from_attribute: k8s.cluster.name
 
 alloy-profiles:
   enabled: true

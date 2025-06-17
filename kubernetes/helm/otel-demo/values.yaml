@@ -5,7 +5,7 @@ default:
     # - name: OTEL_COLLECTOR_NAME
     #   value: grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: 'service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo-grafana-cloud,service.version={{ .Chart.AppVersion }}'
+      value: 'service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version={{ .Chart.AppVersion }},k8s.cluster.name=potato'
 
 prometheus:
   enabled: false
@@ -78,16 +78,29 @@ opentelemetry-collector:
               # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
               - replace_pattern(name, "\\?.*", "")
               - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
+      # transform/logs:
+      #   error_mode: ignore
+      #   log_statements:
+      #     - context: log
+      #       statements:
+      #         - set(attributes["trace_id"], trace_id)
+      #         - set(attributes["span_id"], span_id)
       resource:
         attributes:
         - key: service.instance.id
           from_attribute: k8s.pod.uid
           action: insert
+        - key: service.namespace
+          from_attribute: k8s.namespace.name
+          action: insert
+        - key: cluster
+          from_attribute: k8s.cluster.name
+          action: insert
 
       # 1% sampler for traces and logs
       # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/probabilisticsamplerprocessor
       probabilistic_sampler:
-        sampling_percentage: 1
+        sampling_percentage: 10
 
     connectors:
       spanmetrics: {}
@@ -95,7 +108,8 @@ opentelemetry-collector:
     service:
       pipelines:
         traces:
-          processors: [memory_limiter, resource, transform, batch, probabilistic_sampler]
+          processors: [memory_limiter, resource, transform, batch]
+          # processors: [memory_limiter, resource, transform, batch, probabilistic_sampler]
           # exporters: [otlp, debug, spanmetrics]
           exporters: [otlp/alloy, debug, spanmetrics]
         metrics:
@@ -104,7 +118,8 @@ opentelemetry-collector:
           # exporters: [otlphttp/prometheus, debug]
           exporters: [otlp/alloy, debug]
         logs:
-          processors: [memory_limiter, resource, batch, probabilistic_sampler]
+          processors: [memory_limiter, resource, batch]
+          # processors: [memory_limiter, resource, transform/logs, batch, probabilistic_sampler]
           # exporters: [opensearch, debug]
           exporters: [otlp/alloy, debug]
 
