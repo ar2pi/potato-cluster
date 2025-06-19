@@ -5,7 +5,7 @@ default:
     # - name: OTEL_COLLECTOR_NAME
     #   value: grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: 'service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo,service.version={{ .Chart.AppVersion }},k8s.cluster.name=potato'
+      value: 'service.name=$(OTEL_SERVICE_NAME),deployment.environment.name=staging,service.version={{ .Chart.AppVersion }}'
 
 prometheus:
   enabled: false
@@ -42,18 +42,6 @@ opentelemetry-collector:
       #   endpoint: jaeger-collector:4317
       #   tls:
       #     insecure: true
-      ## Create an exporter to Alloy receiver using the standard `otlp` export format
-      otlp/alloy:
-        endpoint: http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:4317
-        tls:
-          insecure: true
-      # https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/zipkinexporter/README.md
-      # zipkin/alloy:
-      #   endpoint: http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:9411/api/v2/spans
-      #   # endpoint: http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:9411
-      #   tls:
-      #     insecure: true
-        # format: json
       # Create an exporter to Prometheus (metrics)
       # otlphttp/prometheus:
       #   endpoint: http://prometheus:9090/api/v1/otlp
@@ -65,6 +53,10 @@ opentelemetry-collector:
       #     endpoint: http://opensearch:9200
       #     tls:
       #       insecure: true
+      otlp/alloy:
+        endpoint: http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:4317
+        tls:
+          insecure: true
 
     processors:
       # This processor is used to help limit high cardinality on next.js span names
@@ -78,13 +70,7 @@ opentelemetry-collector:
               # could be removed when https://github.com/vercel/next.js/pull/64852 is fixed upstream
               - replace_pattern(name, "\\?.*", "")
               - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
-      # transform/logs:
-      #   error_mode: ignore
-      #   log_statements:
-      #     - context: log
-      #       statements:
-      #         - set(attributes["trace_id"], trace_id)
-      #         - set(attributes["span_id"], span_id)
+
       resource:
         attributes:
         - key: service.instance.id
@@ -93,14 +79,11 @@ opentelemetry-collector:
         - key: service.namespace
           from_attribute: k8s.namespace.name
           action: insert
-        - key: cluster
-          from_attribute: k8s.cluster.name
-          action: insert
 
       # 1% sampler for traces and logs
       # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/probabilisticsamplerprocessor
-      probabilistic_sampler:
-        sampling_percentage: 10
+      # probabilistic_sampler:
+      #   sampling_percentage: 10
 
     connectors:
       spanmetrics: {}

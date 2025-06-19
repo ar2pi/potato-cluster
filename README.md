@@ -17,18 +17,23 @@ Launch a multi-node k8s cluster.
 ```sh
 kind create cluster --config kubernetes/potato-cluster-config.yaml
 
-# check the running nodes
-k9s -c nodes
+# check cadvisor metrics
+kubectl proxy
+curl http://localhost:8001/api/v1/nodes/potato-worker/proxy/metrics/cadvisor
 
 # install metrics server
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 kubectl patch -n kube-system deployment metrics-server --type=json \
   -p '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+
+# check the running nodes
+k9s -c nodes
 ```
 
 ## Kubernetes monitoring
 
 - [grafana/k8s-monitoring helm chart](https://github.com/grafana/k8s-monitoring-helm/blob/main/charts/k8s-monitoring/README.md)
+- [Structure](https://github.com/grafana/k8s-monitoring-helm/blob/main/charts/k8s-monitoring/docs/Structure.md)
 
 Grab [Grafana Kubernetes configuration](https://ar2p2.grafana.net/a/grafana-k8s-app/configuration), toggle desired features, copy paste and adjust `kubernetes/helm/grafana-k8s-monitoring/values.yaml` accordingly.
 
@@ -56,15 +61,11 @@ export $(cat kubernetes/helm/grafana-k8s-monitoring/.env | xargs)
 helm upgrade --install --atomic --timeout 300s -n monitoring --create-namespace grafana-k8s-monitoring grafana/k8s-monitoring \
   -f <(envsubst < kubernetes/helm/grafana-k8s-monitoring/values.yaml)
 
-# issue since v2.1 might need to rerun the install to deploy missing alloy-* resources
+# issue since v2.1 might need to rerun the install to deploy missing alloy-* resources after an uninstall because of dangling operator finalizer
 # https://github.com/grafana/k8s-monitoring-helm/issues/1615
 
 # check the running pods in the monitoring namespace
 k9s -n monitoring -c pods
-
-# check cadvisor metrics
-kubectl proxy
-curl http://localhost:8001/api/v1/nodes/potato-worker/proxy/metrics/cadvisor
 ```
 
 ## Resource stress test
@@ -96,6 +97,8 @@ helm upgrade --install --create-namespace -n otel-demo -f kubernetes/helm/otel-d
 k9s -n otel-demo -c deploy
 
 # port forward the frontend-proxy
+kubectl -n otel-demo port-forward svc/frontend-proxy 8080:8080
+
 # open http://localhost:8080
 # open http://localhost:8080/grafana
 ```
@@ -165,13 +168,15 @@ k9s -n hello-api -c pods
 ## Clean up
 
 ```sh
+kind delete cluster --name potato
+
+# or more fine-grained
 kubectl delete --ignore-not-found -f kubernetes/manifests/hello-api-deployment.yaml -f kubernetes/manifests/noisy-neighborhood-pods.yaml
 helm uninstall -n otel-demo --ignore-not-found otel-demo
 helm uninstall -n monitoring --ignore-not-found grafana-k8s-monitoring
 # issue since v2.1 might need to remove alloy-* subcharts manually
 # https://github.com/grafana/k8s-monitoring-helm/issues/1615
 helm uninstall -n monitoring --ignore-not-found grafana-k8s-monitoring-alloy-logs grafana-k8s-monitoring-alloy-metrics grafana-k8s-monitoring-alloy-profiles grafana-k8s-monitoring-alloy-receiver grafana-k8s-monitoring-alloy-singleton
-kind delete cluster --name potato
 ```
 
 ## Additional resources
@@ -182,3 +187,12 @@ kind delete cluster --name potato
 ## @TODO:
 
 - [ ] why this query no workey `{cluster="potato", service_name="frontend-proxy", service_namespace="otel-demo"}`, is otel demo missing labels?
+- [ ] install script, save secrets
+- [ ] makefile all the things
+- [ ] export Grafana dashboards
+  - single pane of glass (otel)
+  - single pane of glass (beyla)
+  - warning and errors
+  - otel-demo
+  - nginx exporter
+  - k6 metrics

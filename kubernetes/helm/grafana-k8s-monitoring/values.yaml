@@ -11,6 +11,12 @@ destinations:
       password: $GRAFANA_ACCESS_TOKEN
   - name: grafana-cloud-logs
     type: loki
+    # make sure 'k8s.cluster.name' resource attribute is used as label
+    # it's otlp convention and using unindexed cluster label breaks
+    # traces to logs correlation
+    # https://grafana.com/docs/loki/latest/get-started/labels/#default-labels-for-opentelemetry
+    # https://github.com/grafana/k8s-monitoring-helm/blob/main/charts/k8s-monitoring/destinations/loki-values.yaml#L58-L60
+    clusterLabels: [k8s.cluster.name]
     url: $GRAFANA_LOGS_URL
     auth:
       type: basic
@@ -18,12 +24,32 @@ destinations:
       password: $GRAFANA_ACCESS_TOKEN
   - name: grafana-cloud-otlp-endpoint
     type: otlp
+    # make sure 'k8s.cluster.name' resource attribute is used as label
+    # it's otlp convention and using unindexed cluster label breaks
+    # traces to logs correlation
+    # https://grafana.com/docs/loki/latest/get-started/labels/#default-labels-for-opentelemetry
+    # https://github.com/grafana/k8s-monitoring-helm/blob/main/charts/k8s-monitoring/destinations/otlp-values.yaml#L57-L59
+    clusterLabels: [k8s.cluster.name]
     url: $GRAFANA_OTLP_URL
     protocol: http
     auth:
       type: basic
       username: "$GRAFANA_OTLP_USER"
       password: $GRAFANA_ACCESS_TOKEN
+    # processors:
+    #   transform:
+    #     logs:
+    #       # https://github.com/grafana/k8s-monitoring-helm/blob/main/charts/k8s-monitoring/destinations/otlp-values.yaml#L315-L334
+    #       logToResource:
+    #         cluster: k8s.cluster.name
+    #     # https://github.com/grafana/k8s-monitoring-helm/blob/main/charts/k8s-monitoring/destinations/otlp-values.yaml#L223-L228
+    #     tailSampling:
+    #       # -- Apply tail sampling policies to the traces before delivering them to this destination. This will create an
+    #       # additional Alloy instance to handle the tail sampling, and traces sent to this destination will be automatically
+    #       # forwarded, using a load balancer component, to the new sampling Alloy instance.
+    #       # @section -- Tail Sampling
+    #       enabled: false
+
     metrics:
       enabled: true
     logs:
@@ -57,7 +83,7 @@ annotationAutodiscovery:
   enabled: true
 
 prometheusOperatorObjects:
-  enabled: true
+  enabled: false
 
 clusterEvents:
   enabled: true
@@ -69,6 +95,11 @@ nodeLogs:
 
 podLogs:
   enabled: true
+  excludeNamespaces:
+    # exclude otel-demo
+    # to avoid confusion we only want logs sent through alloy-receiver
+    - otel-demo
+    - otel-demo-local
 
 applicationObservability:
   enabled: true
@@ -77,15 +108,20 @@ applicationObservability:
       grpc:
         enabled: true
         port: 4317
-      http:
-        enabled: true
-        port: 4318
-    zipkin:
-      enabled: true
-      port: 9411
   connectors:
     grafanaCloudMetrics:
       enabled: true
+  # processors:
+  #   attributes:
+  #     actions:
+  #       # remove cluster label to avoid traces to logs problem
+  #       # as 'cluster' is not indexed, 'k8s.cluster.name' is
+  #       - key: cluster
+  #         action: delete
+  # transform:
+  #   logs:
+  #     resources:
+  #       - delete_key(attributes, "cluster")
 
 # careful when running beyla alongside otel-demo
 autoInstrumentation:
@@ -103,8 +139,10 @@ autoInstrumentation:
           exclude_otel_instrumented_services: false
           exclude_services:
           - exe_path: .*alloy.*|.*otelcol.*|.*beyla.*
+          # filter out kube-system, monitoring, otel-demo
           - k8s_namespace: .*kube.*|.*monitoring.*|.*otel-demo.*
           services:
+          # include hello-api
           - k8s_namespace: .*hello-api.*
         filter:
           network:
@@ -154,6 +192,8 @@ alloy-singleton:
 
 alloy-logs:
   enabled: true
+  # liveDebugging:
+  #   enabled: true
   alloy:
     mounts:
       extra:
@@ -169,6 +209,8 @@ alloy-logs:
 
 alloy-receiver:
   enabled: true
+  # liveDebugging:
+  #   enabled: true
   alloy:
     extraPorts:
       - name: otlp-grpc
@@ -183,23 +225,6 @@ alloy-receiver:
         port: 9411
         targetPort: 9411
         protocol: TCP
-    config:
-      logs:
-        labels:
-          - name: service_name
-            from_attribute: service.name
-          - name: service_namespace
-            from_attribute: service.namespace
-          - name: cluster
-            from_attribute: k8s.cluster.name
-      traces:
-        labels:
-          - name: service_name
-            from_attribute: service.name
-          - name: service_namespace
-            from_attribute: service.namespace
-          - name: cluster
-            from_attribute: k8s.cluster.name
 
 alloy-profiles:
   enabled: true

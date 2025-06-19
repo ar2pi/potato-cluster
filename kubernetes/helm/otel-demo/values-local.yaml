@@ -1,4 +1,4 @@
 default:
   envOverrides:
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: 'service.name=$(OTEL_SERVICE_NAME),service.namespace=otel-demo-local,service.version={{ .Chart.AppVersion }},k8s.cluster.name=potato'
+      value: 'service.name=$(OTEL_SERVICE_NAME),deployment.environment.name=local,service.version={{ .Chart.AppVersion }}'
