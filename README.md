@@ -186,9 +186,7 @@ helm uninstall -n monitoring --ignore-not-found grafana-k8s-monitoring-alloy-log
 
 ## @TODO:
 
-- [ ] why this query no workey `{cluster="potato", service_name="frontend-proxy", service_namespace="otel-demo"}`, is otel demo missing labels?
-- [ ] install script, save secrets
-- [ ] makefile all the things
+- [ ] install script, makefile all the things
 - [ ] export Grafana dashboards
   - single pane of glass (otel)
   - single pane of glass (beyla)
