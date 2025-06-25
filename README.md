@@ -124,9 +124,10 @@ pip freeze > requirements.txt
 ### Build
 
 ```sh
-docker build -t ar2pi/hello-api --platform linux/amd64 hello-api
-docker run -p 8000:8000 ar2pi/hello-api
-docker push ar2pi/hello-api
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -t ar2pi/hello-api \
+  --push .
 ```
 
 ### Deploy

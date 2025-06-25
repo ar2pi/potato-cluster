@@ -60,7 +60,7 @@ async def fail(
     status_code: int = 500, force_success: bool = False, with_mem_leak: bool = False
 ):
     if with_mem_leak:
-        mem_leak.append(bytearray(1 * 1024 * 1024))
+        mem_leak.append(bytearray(4 * 1024))
     if force_success:
         logger.info("ok")
         return {"message": "ok"}
