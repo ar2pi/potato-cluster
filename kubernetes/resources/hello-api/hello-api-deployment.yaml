@@ -1,11 +1,4 @@
 ---
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: hello-api
-  labels:
-    name: hello-api
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -92,16 +85,3 @@ spec:
         #   initialDelaySeconds: 5
         #   periodSeconds: 5
         #   failureThreshold: 11
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: hello-api
-  namespace: hello-api
-spec:
-  selector:
-    app: hello-api
-  ports:
-  - port: 8000
-    targetPort: 8000
-  type: ClusterIP

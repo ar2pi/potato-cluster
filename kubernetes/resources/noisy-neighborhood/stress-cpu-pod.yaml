@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: stress-cpu
+  namespace: noisy-neighborhood
+spec:
+  containers:
+  - name: noisy-app
+    image: python:3-slim
+    env:
+    - name: PYTHONUNBUFFERED
+      value: "1"
+    command: ["python3"]
+    args: ["-c", "import time; print('Sleeping for 5m...'); time.sleep(300); print('Wake Up!'); exec('while True: [i**i for i in range(1000)]')"]
+    resources:
+      limits:
+        cpu: "0.2"
+      requests:
+        cpu: "0.1"
+  terminationGracePeriodSeconds: 0

@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: stress-mem
+  namespace: noisy-neighborhood
+spec:
+  containers:
+  - name: noisy-app
+    image: python:3-slim
+    env:
+    # Force the stdout and stderr streams to be unbuffered for easier logging
+    - name: PYTHONUNBUFFERED
+      value: "1"
+    command: ["python3"]
+    # Wait 5m to give any stale prom metrics time to clear, then run approx. 5m until OOM killed
+    args: ["-c", "import time; print('Sleeping for 5m...'); time.sleep(300); print('Wake Up!'); [print(f'Allocating {i * 4} Mi...') or memory.append(bytearray(4 * 1024 * 1024)) or time.sleep(9.375) for i, memory in enumerate([[]]*1000)]"]
+    resources:
+      limits:
+        memory: "128Mi"
+      requests:
+        memory: "64Mi"
+  terminationGracePeriodSeconds: 0

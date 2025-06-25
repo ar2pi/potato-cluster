@@ -17,7 +17,7 @@ Launch a multi-node k8s cluster.
 ```sh
 kind create cluster --config kubernetes/potato-cluster-config.yaml
 
-# check cadvisor metrics
+# check cadvisor metrics (optional)
 kubectl proxy
 curl http://localhost:8001/api/v1/nodes/potato-worker/proxy/metrics/cadvisor
 
@@ -73,7 +73,8 @@ k9s -n monitoring -c pods
 Sample `stress-mem` and `stress-cpu` pods will hog resources to trigger generic Kubernetes alerting rules, available out of the box.  
 
 ```sh
-kubectl replace --force -f kubernetes/manifests/noisy-neighborhood-pods.yaml
+kubectl create namespace noisy-neighborhood
+kubectl replace --force -f kubernetes/resources/noisy-neighborhood
 
 # monitor resource usage
 k9s -n noisy-neighborhood -c pods
@@ -131,7 +132,8 @@ docker push ar2pi/hello-api
 ### Deploy
 
 ```sh
-kubectl replace --force -f kubernetes/manifests/hello-api-deployment.yaml -f kubernetes/manifests/hello-api-nginx-deployment.yaml
+kubectl create namespace hello-api
+kubectl replace --force -f kubernetes/resources/hello-api
 
 k9s -n hello-api -c pods
 
@@ -171,7 +173,8 @@ k9s -n hello-api -c pods
 kind delete cluster --name potato
 
 # or more fine-grained
-kubectl delete --ignore-not-found -f kubernetes/manifests/hello-api-deployment.yaml -f kubernetes/manifests/noisy-neighborhood-pods.yaml
+kubectl delete --ignore-not-found -f kubernetes/resources/noisy-neighborhood
+kubectl delete --ignore-not-found -f kubernetes/resources/hello-api
 helm uninstall -n otel-demo --ignore-not-found otel-demo
 helm uninstall -n monitoring --ignore-not-found grafana-k8s-monitoring
 # issue since v2.1 might need to remove alloy-* subcharts manually
