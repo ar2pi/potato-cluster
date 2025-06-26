@@ -7,14 +7,6 @@
       "type": "datasource",
       "pluginId": "prometheus",
       "pluginName": "Prometheus"
-    },
-    {
-      "name": "DS_GRAFANA-TESTDATA-DATASOURCE",
-      "label": "grafana-testdata-datasource",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "grafana-testdata-datasource",
-      "pluginName": "TestData"
     }
   ],
   "__elements": {},
@@ -32,21 +24,9 @@
       "version": "12.1.0-90058"
     },
     {
-      "type": "datasource",
-      "id": "grafana-testdata-datasource",
-      "name": "TestData",
-      "version": "12.1.0-pre"
-    },
-    {
       "type": "panel",
       "id": "heatmap",
       "name": "Heatmap",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "logs",
-      "name": "Logs",
       "version": ""
     },
     {
@@ -100,7 +80,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": null,
   "links": [],
   "panels": [
     {
@@ -1282,214 +1261,6 @@
       ],
       "title": "Pods status per namespace (last)",
       "type": "stat"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 44
-      },
-      "id": 19,
-      "panels": [],
-      "title": "📋 Logs",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_GRAFANACLOUD-AR2P2-PROM}"
-      },
-      "description": "See [recorded queries](https://ar2pi.grafana.net/recorded-queries)",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "warnings"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "errors"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 45
-      },
-      "id": 22,
-      "links": [
-        {
-          "targetBlank": true,
-          "title": "Search logs",
-          "url": "https://ar2pi.grafana.net/goto/bOCgsetHR?orgId=1"
-        }
-      ],
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.1.0-90058",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_GRAFANACLOUD-AR2P2-PROM}"
-          },
-          "editorMode": "code",
-          "expr": "sum(log_warnings{})",
-          "legendFormat": "warnings",
-          "range": true,
-          "refId": "warnings"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_GRAFANACLOUD-AR2P2-PROM}"
-          },
-          "editorMode": "code",
-          "expr": "sum(log_errors{})",
-          "hide": false,
-          "legendFormat": "errors",
-          "range": true,
-          "refId": "errors"
-        }
-      ],
-      "title": "Warnings and Errors",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-testdata-datasource",
-        "uid": "${DS_GRAFANA-TESTDATA-DATASOURCE}"
-      },
-      "gridPos": {
-        "h": 13,
-        "w": 24,
-        "x": 0,
-        "y": 52
-      },
-      "id": 1,
-      "links": [
-        {
-          "targetBlank": true,
-          "title": "Show details",
-          "url": "https://ar2pi.grafana.net/goto/wHcRCxtNg?orgId=1"
-        }
-      ],
-      "options": {
-        "dedupStrategy": "none",
-        "enableInfiniteScrolling": false,
-        "enableLogDetails": true,
-        "prettifyLogMessage": false,
-        "showCommonLabels": false,
-        "showLabels": false,
-        "showTime": false,
-        "sortOrder": "Descending",
-        "wrapLogMessage": false
-      },
-      "pluginVersion": "12.1.0-90058",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-testdata-datasource",
-            "uid": "${DS_GRAFANA-TESTDATA-DATASOURCE}"
-          },
-          "levelColumn": true,
-          "lines": 100,
-          "refId": "A",
-          "scenarioId": "logs"
-        }
-      ],
-      "title": "splunk logs",
-      "type": "logs"
     }
   ],
   "refresh": "1m",
@@ -1566,6 +1337,7 @@
   "timezone": "browser",
   "title": "First Pane Of Glass (beyla)",
   "uid": "deemk7qof7k00c",
-  "version": 4,
-  "weekStart": ""
+  "version": 5,
+  "weekStart": "",
+  "id": null
 }
