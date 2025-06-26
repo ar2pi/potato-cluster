@@ -165,8 +165,17 @@ k9s -n hello-api -c pods
 
 ### NGINX exporter
 
-- [https://github.com/nginx/nginx-prometheus-exporter]
-- [https://github.com/nginx/nginx-prometheus-exporter/blob/main/grafana/README.md]
+- https://github.com/nginx/nginx-prometheus-exporter
+- https://github.com/nginx/nginx-prometheus-exporter/blob/main/grafana/README.md
+
+### Dasboards
+
+@TODO: dashboards screenshots + json links
+- fpog otel
+- fpog beyla
+- k6 results
+- nginx exporter
+- otel demo dashboard
 
 ## Clean up
 

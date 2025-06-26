@@ -125,7 +125,7 @@ applicationObservability:
 
 # careful when running beyla alongside otel-demo
 autoInstrumentation:
-  enabled: false
+  enabled: true
   preset: application
   beyla:
     config:
