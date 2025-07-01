@@ -196,6 +196,7 @@ helm uninstall -n monitoring --ignore-not-found grafana-k8s-monitoring-alloy-log
 
 - [play.grafana.org](https://play.grafana.org/)
 - [grafana.com/grafana/dashboards](https://grafana.com/grafana/dashboards/)
+- [Make your own potato battery](https://youtu.be/SOsE5ECH_IM?feature=shared)
 
 ## @TODO:
 
