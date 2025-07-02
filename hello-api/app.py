@@ -170,7 +170,7 @@ def burn_some_cpu(time_ms: int = 10000):
     while time.time() - start_time < target_time:
         # Mathematical operations that consume CPU
         result = 0
-        for i in range(10000):
+        for i in range(1000):
             result += i * i * i  # Cubic calculations
             result = result % 1000000  # Modulo to prevent overflow
 
@@ -181,7 +181,7 @@ def burn_some_cpu(time_ms: int = 10000):
 def burn_cpu_harder():
     # Additional CPU work - prime number calculations
     result = 0
-    for num in range(2, 1000):
+    for num in range(2, 100):
         is_prime = True
         for i in range(2, int(num ** 0.5) + 1):
             if num % i == 0:
