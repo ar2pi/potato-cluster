@@ -16,72 +16,77 @@ spec:
     spec:
       containers:
 
-      # hello-api without otel
-      # - name: hello-api
-      #   image: ar2pi/hello-api
-      #   ports:
-      #   - containerPort: 8000
-      #   command: ["uvicorn"]
-      #   args:
-      #     - "app:app"
-      #     - "--host"
-      #     - "0.0.0.0"
-      #     - "--port"
-      #     - "8000"
-      #   resources:
-      #     limits:
-      #       cpu: "500m"
-      #       memory: "512Mi"
-      #     requests:
-      #       cpu: "250m"
-      #       memory: "256Mi"
-      #   readinessProbe:
-      #     httpGet:
-      #       path: /health
-      #       port: 8000
-      #     initialDelaySeconds: 5
-      #     periodSeconds: 5
-      #     failureThreshold: 11
+        # hello-api without otel wrapper (the hard way)
+        # https://opentelemetry.io/docs/languages/python/instrumentation/
+        - name: hello-api
+          image: ar2pi/hello-api:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: "hello-api"
+            # use Grafana alloy OTLP/gRPC endpoint:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:4317"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service.namespace=hello-api,service.name=hello-api,deployment.environment.name=production"
+          command: ["uvicorn"]
+          args:
+            - "app:app"
+            - "--host"
+            - "0.0.0.0"
+            - "--port"
+            - "8000"
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 11
 
-      # hello-api with otel
-      - name: hello-api
-        image: ar2pi/hello-api:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8000
-        env:
-        - name: OTEL_SERVICE_NAME
-          value: "hello-api"
-        # use Grafana alloy OTLP/gRPC endpoint:
-        - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: "http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:4317"
-        - name: OTEL_RESOURCE_ATTRIBUTES
-          value: "service.namespace=hello-api,service.name=hello-api,container.name=hello-api-with-otel,deployment.environment=production"
-        # - name: OTEL_EXPORTER_OTLP_PROTOCOL
-        #   value: "grpc"
-        # - name: OTEL_EXPORTER_OTLP_INSECURE
-        #   value: "true"
-        command: ["opentelemetry-instrument"]
-        args:
-          - "--traces_exporter=otlp"
-          - "--metrics_exporter=otlp"
-          - "uvicorn"
-          - "app:app"
-          - "--host"
-          - "0.0.0.0"
-          - "--port"
-          - "8000"
-        resources:
-          limits:
-            cpu: "0.2"
-            memory: "128Mi"
-          requests:
-            cpu: "0.1"
-            memory: "64Mi"
-        # readinessProbe:
-        #   httpGet:
-        #     path: /health
-        #     port: 8000
-        #   initialDelaySeconds: 5
-        #   periodSeconds: 5
-        #   failureThreshold: 11
+        # hello-api with otel wrapper (auto-instrumentation)
+        # https://opentelemetry.io/docs/zero-code/python/configuration/
+        # - name: hello-api
+        #   image: ar2pi/hello-api:latest
+        #   ports:
+        #     - containerPort: 8000
+        #   env:
+        #     - name: OTEL_SERVICE_NAME
+        #       value: "hello-api"
+        #     # use Grafana alloy OTLP/gRPC endpoint:
+        #     - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        #       value: "http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:4317"
+        #     - name: OTEL_RESOURCE_ATTRIBUTES
+        #       value: "service.namespace=hello-api,service.name=hello-api,deployment.environment.name=production"
+        #   command: ["opentelemetry-instrument"]
+        #   args:
+        #     - "--traces_exporter=otlp"
+        #     - "--metrics_exporter=otlp"
+        #     - "uvicorn"
+        #     - "app:app"
+        #     - "--host"
+        #     - "0.0.0.0"
+        #     - "--port"
+        #     - "8000"
+        #   resources:
+        #     limits:
+        #       cpu: "0.2"
+        #       memory: "128Mi"
+        #     requests:
+        #       cpu: "0.1"
+        #       memory: "64Mi"
+        #   readinessProbe:
+        #     httpGet:
+        #       path: /health
+        #       port: 8000
+        #     initialDelaySeconds: 5
+        #     periodSeconds: 5
+        #     failureThreshold: 11

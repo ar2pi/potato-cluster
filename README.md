@@ -149,7 +149,7 @@ Prerequisites: [k6](https://grafana.com/docs/k6/latest/set-up/install-k6)
 ```sh
 while true; do k6 run k6/loadtest.js; done
 
-# to send metrics to grafana cloud via prom remote write:
+# to send k6 metrics to grafana cloud via prom remote write (optional):
 while true; do
     K6_PROMETHEUS_RW_USERNAME="$K6_PROMETHEUS_RW_USERNAME" \
     K6_PROMETHEUS_RW_PASSWORD="$K6_PROMETHEUS_RW_PASSWORD" \
