@@ -161,18 +161,39 @@ async def wait(time_ms: int = 10000):
     return {"message": f"Waited {time_ms/1000}s"}
 
 
-def do_work(time_ms: int = 10000):
-    time.sleep(time_ms / 1000)
-    do_some_extra_work()
+def burn_some_cpu(time_ms: int = 10000):
+    # CPU-intensive work that will be visible in profiling
+    start_time = time.time()
+    target_time = time_ms / 1000
+
+    # Perform CPU-intensive calculations until we reach the target time
+    while time.time() - start_time < target_time:
+        # Mathematical operations that consume CPU
+        result = 0
+        for i in range(10000):
+            result += i * i * i  # Cubic calculations
+            result = result % 1000000  # Modulo to prevent overflow
+
+        # Additional CPU work - prime number calculations
+        burn_cpu_harder()
 
 
-def do_some_extra_work():
-    time.sleep(10)
+def burn_cpu_harder():
+    # Additional CPU work - prime number calculations
+    result = 0
+    for num in range(2, 1000):
+        is_prime = True
+        for i in range(2, int(num ** 0.5) + 1):
+            if num % i == 0:
+                is_prime = False
+                break
+        if is_prime:
+            result += num
 
 
 @app.get("/sync-wait")
 def sync_wait(time_ms: int = 10000):
-    do_work(time_ms)
+    burn_some_cpu(time_ms)
     logger.warning(f"Waited sync {time_ms}ms")
     return {"message": f"Waited sync {time_ms/1000}s"}
 
