@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import time
 from typing import Callable
 
 from fastapi import FastAPI, HTTPException, Request
@@ -84,6 +85,11 @@ pyroscope.configure(
     application_name="hello-api",
     server_address=PYROSCOPE_SERVER_ADDRESS,
     enable_logging=True,  # debug pyroscope logs
+    tags={
+        "namespace": "hello-api",
+        "service_namespace": "hello-api",
+        "service_name": "hello-api",
+    },
 )
 
 app = FastAPI()
@@ -153,6 +159,22 @@ async def wait(time_ms: int = 10000):
     await asyncio.sleep(time_ms / 1000)
     logger.warning(f"Waited {time_ms}ms")
     return {"message": f"Waited {time_ms/1000}s"}
+
+
+def do_work(time_ms: int = 10000):
+    time.sleep(time_ms / 1000)
+    do_some_extra_work()
+
+
+def do_some_extra_work():
+    time.sleep(10)
+
+
+@app.get("/sync-wait")
+def sync_wait(time_ms: int = 10000):
+    do_work(time_ms)
+    logger.warning(f"Waited sync {time_ms}ms")
+    return {"message": f"Waited sync {time_ms/1000}s"}
 
 
 @app.get("/health")
