@@ -36,7 +36,7 @@ export default function () {
           fetch('http://localhost:8000/fail?with_mem_leak=1');
         }
       } else {
-        if (randomTimeMs > 2000) {
+        if (randomTimeMs > 1000) {
           fetch(`http://localhost:8000/sync-wait?time_ms=${randomTimeMs + 1000}`);
         } else {
           fetch(`http://localhost:8000/wait?time_ms=${randomTimeMs + 1000}`);

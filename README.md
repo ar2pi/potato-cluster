@@ -203,6 +203,7 @@ kubectl delete --ignore-not-found -f kubernetes/resources/noisy-neighborhood
 kubectl delete --ignore-not-found -f kubernetes/resources/hello-api
 helm uninstall -n otel-demo --ignore-not-found otel-demo
 helm uninstall -n monitoring --ignore-not-found grafana-k8s-monitoring
+helm uninstall -n monitoring --ignore-not-found alloy-sdk-profiles
 # issue since v2.1 might need to remove alloy-* subcharts manually
 # https://github.com/grafana/k8s-monitoring-helm/issues/1615
 helm uninstall -n monitoring --ignore-not-found grafana-k8s-monitoring-alloy-logs grafana-k8s-monitoring-alloy-metrics grafana-k8s-monitoring-alloy-profiles grafana-k8s-monitoring-alloy-receiver grafana-k8s-monitoring-alloy-singleton
