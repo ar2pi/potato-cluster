@@ -26,8 +26,8 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 
 # Profiles
-# import pyroscope
-# from pyroscope.otel import PyroscopeSpanProcessor
+import pyroscope
+from pyroscope.otel import PyroscopeSpanProcessor
 
 # Flask instrumentation
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -35,9 +35,9 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv(
     "OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"
 )
-# PYROSCOPE_SERVER_ADDRESS = os.getenv(
-#     "PYROSCOPE_SERVER_ADDRESS", "http://localhost:4040"
-# )
+PYROSCOPE_SERVER_ADDRESS = os.getenv(
+    "PYROSCOPE_SERVER_ADDRESS", "http://localhost:4040"
+)
 
 # Disable Uvicorn's default logger
 logging.getLogger("uvicorn.access").disabled = True
@@ -76,14 +76,15 @@ span_processor = BatchSpanProcessor(
 tracer_provider.add_span_processor(span_processor)
 # Link traces to pyroscope
 # https://grafana.com/docs/pyroscope/latest/configure-client/trace-span-profiles/python-span-profiles/
-# tracer_provider.add_span_processor(PyroscopeSpanProcessor())
+tracer_provider.add_span_processor(PyroscopeSpanProcessor())
 trace.set_tracer_provider(tracer_provider)
 
 # Set up profiles
-# pyroscope.configure(
-#     application_name="hello-api",
-#     server_address=PYROSCOPE_SERVER_ADDRESS,
-# )
+pyroscope.configure(
+    application_name="hello-api",
+    server_address=PYROSCOPE_SERVER_ADDRESS,
+    enable_logging=True,  # debug pyroscope logs
+)
 
 app = FastAPI()
 mem_leak: list = []

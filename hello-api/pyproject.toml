@@ -18,6 +18,8 @@ dependencies = [
     "opentelemetry-instrumentation-fastapi (>=0.55b1,<0.56)",
     "opentelemetry-instrumentation-logging (>=0.55b1,<0.56)",
     "opentelemetry-instrumentation-system-metrics (>=0.55b1,<0.56)",
+    "pyroscope-io (>=0.8.11,<0.9.0)",
+    "pyroscope-otel (>=0.4.1,<0.5.0)",
 ]
 
 [tool.poetry]

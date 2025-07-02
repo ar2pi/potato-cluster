@@ -28,6 +28,9 @@ spec:
             # use Grafana alloy OTLP/gRPC endpoint:
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "http://grafana-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local:4317"
+            # use Grafana alloy sdk profiles endpoint:
+            - name: PYROSCOPE_SERVER_ADDRESS
+              value: "http://alloy-sdk-profiles.monitoring.svc.cluster.local:4041"
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: "service.namespace=hello-api,service.name=hello-api,deployment.environment.name=production"
           command: ["uvicorn"]

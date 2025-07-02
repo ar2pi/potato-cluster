@@ -104,7 +104,7 @@ kubectl -n otel-demo port-forward svc/frontend-proxy 8080:8080
 # open http://localhost:8080/grafana
 ```
 
-## Python API with auto OTLP instrumentation
+## Python API with OTLP instrumentation
 
 - [Send data to the Grafana Cloud OTLP endpoint](https://grafana.com/docs/grafana-cloud/send-data/otlp/send-data-otlp/)
 
@@ -140,6 +140,22 @@ k9s -n hello-api -c pods
 
 # port forward hello-api
 kubectl port-forward -n hello-api svc/nginx-reverse-proxy 8000:8000
+```
+
+## Deploy standalone alloy for profiles
+
+[Grafana Alloy Helm chart](https://github.com/grafana/alloy/tree/main/operations/helm/charts/alloy)
+
+```sh
+echo """
+GRAFANA_PROFILES_URL="REPLACE_ME"
+GRAFANA_PROFILES_USER="REPLACE_ME"
+GRAFANA_ACCESS_TOKEN="REPLACE_ME"
+""" > kubernetes/helm/alloy-sdk-profiles/.env
+export $(cat kubernetes/helm/alloy-sdk-profiles/.env | xargs)
+
+helm upgrade --install --create-namespace -n monitoring alloy-sdk-profiles grafana/alloy \
+  -f <(envsubst < kubernetes/helm/alloy-sdk-profiles/values.yaml)
 ```
 
 ## Generate some traffic through k6

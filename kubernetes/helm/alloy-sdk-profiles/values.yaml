@@ -1,0 +1,66 @@
+alloy:
+  configMap:
+    create: true
+    content: |
+      // https://grafana.com/docs/alloy/latest/reference/components/
+      // https://grafana.com/docs/alloy/latest/collect/opentelemetry-to-lgtm-stack/
+
+      logging {
+        level  = "debug"
+        format = "logfmt"
+      }
+
+      livedebugging {
+        enabled = true
+      }
+
+      // To receive profiles from sdk instrumentation
+      // https://grafana.com/docs/pyroscope/latest/configure-client/grafana-alloy/receive_profiles/#basic-receiving-setup
+      pyroscope.receive_http "default" {
+        http {
+          listen_address = "0.0.0.0"
+          listen_port = 4041
+        }
+        forward_to = [pyroscope.write.grafana_cloud.receiver]
+      }
+
+      pyroscope.write "grafana_cloud" {
+        // Send metrics to Grafana Cloud
+        endpoint {
+          url = sys.env("GRAFANA_PROFILES_URL")
+          basic_auth {
+            username = sys.env("GRAFANA_PROFILES_USER")
+            password = sys.env("GRAFANA_ACCESS_TOKEN")
+          }
+        }
+        external_labels = {
+          "env" = "production",
+        }
+      }
+
+  # public preview needed for pyroscope.receive_http
+  # https://grafana.com/docs/alloy/latest/reference/components/pyroscope/pyroscope.receive_http/
+  stabilityLevel: "public-preview"
+
+  # https://raw.githubusercontent.com/grafana/alloy/main/operations/helm/charts/alloy/values.yaml
+  extraEnv:
+    - name: GRAFANA_PROFILES_URL
+      value: "$GRAFANA_PROFILES_URL"
+    - name: GRAFANA_PROFILES_USER
+      value: "$GRAFANA_PROFILES_USER"
+    - name: GRAFANA_ACCESS_TOKEN
+      value: "$GRAFANA_ACCESS_TOKEN"
+
+  extraPorts:
+    - name: "pyroscope"
+      port: 4041
+      targetPort: 4041
+      protocol: "TCP"
+
+  securityContext:
+    privileged: true
+    runAsGroup: 0
+    runAsUser: 0
+
+controller:
+  hostPID: true
