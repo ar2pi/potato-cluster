@@ -158,6 +158,29 @@ helm upgrade --install --create-namespace -n monitoring alloy-sdk-profiles grafa
   -f <(envsubst < kubernetes/helm/alloy-sdk-profiles/values.yaml)
 ```
 
+## Deploy standalone alloy for rabbitmq
+
+[Grafana Alloy Helm chart](https://github.com/grafana/alloy/tree/main/operations/helm/charts/alloy)
+
+```sh
+echo """
+GRAFANA_METRICS_URL="REPLACE_ME"
+GRAFANA_METRICS_USER="REPLACE_ME"
+GRAFANA_CLUSTER_METRICS_URL="REPLACE_ME"
+GRAFANA_ACCESS_TOKEN="REPLACE_ME"
+""" > kubernetes/helm/alloy-rabbitmq.env
+export $(cat kubernetes/helm/alloy-rabbitmq/.env | xargs)
+
+helm upgrade --install --create-namespace -n monitoring alloy-rabbitmq grafana/alloy \
+  -f <(envsubst < kubernetes/helm/alloy-rabbitmq/values.yaml)
+```
+
+Run the rabbitmq pods
+```sh
+kubectl create namespace rabbitmq
+kubectl replace --force -f kubernetes/resources/rabbitmq/
+```
+
 ## Generate some traffic through k6
 
 Prerequisites: [k6](https://grafana.com/docs/k6/latest/set-up/install-k6)
@@ -201,6 +224,7 @@ kind delete cluster --name potato
 # or more fine-grained
 kubectl delete --ignore-not-found -f kubernetes/resources/noisy-neighborhood
 kubectl delete --ignore-not-found -f kubernetes/resources/hello-api
+kubectl delete --ignore-not-found -f kubernetes/resources/rabbitmq
 helm uninstall -n otel-demo --ignore-not-found otel-demo
 helm uninstall -n monitoring --ignore-not-found grafana-k8s-monitoring
 helm uninstall -n monitoring --ignore-not-found alloy-sdk-profiles

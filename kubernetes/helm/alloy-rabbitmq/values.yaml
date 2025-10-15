@@ -1,0 +1,67 @@
+alloy:
+  configMap:
+    create: true
+    content: |
+      // https://grafana.com/docs/alloy/latest/reference/components/
+      // https://grafana.com/docs/alloy/latest/collect/opentelemetry-to-lgtm-stack/
+
+      logging {
+        level  = "debug"
+        format = "logfmt"
+      }
+
+      livedebugging {
+        enabled = true
+      }
+
+      // Discover RabbitMQ pods (adjust the label selector if your label differs)
+      discovery.kubernetes "rabbitmq_pods" {
+        role = "pod"
+
+        // OPTIONAL: limit to namespaces
+        // namespaces { names = ["default"] }
+
+        // Select only your RabbitMQ pods. Common labels shown; tweak as needed.
+        selectors {
+          role  = "pod"
+          label = "app in (rabbitmq)"
+        }
+      }
+
+      prometheus.relabel "metrics_integrations_rabbitmq" {
+        forward_to = [prometheus.remote_write.default.receiver]
+
+        rule {
+          source_labels = ["__name__"]
+          regex         = "up|erlang_vm_allocators|erlang_vm_dist_node_state|rabbitmq_build_info|rabbitmq_channel_consumers|rabbitmq_channel_get_ack_total|rabbitmq_channel_get_empty_total|rabbitmq_channel_get_total|rabbitmq_channel_messages_acked_total|rabbitmq_channel_messages_confirmed_total|rabbitmq_channel_messages_delivered_ack_total|rabbitmq_channel_messages_delivered_total|rabbitmq_channel_messages_published_total|rabbitmq_channel_messages_redelivered_total|rabbitmq_channel_messages_unconfirmed|rabbitmq_channel_messages_unroutable_dropped_total|rabbitmq_channel_messages_unroutable_returned_total|rabbitmq_channels|rabbitmq_channels_closed_total|rabbitmq_channels_opened_total|rabbitmq_connections|rabbitmq_connections_closed_total|rabbitmq_connections_opened_total|rabbitmq_disk_space_available_bytes|rabbitmq_identity_info|rabbitmq_process_max_fds|rabbitmq_process_max_tcp_sockets|rabbitmq_process_open_fds|rabbitmq_process_open_tcp_sockets|rabbitmq_process_resident_memory_bytes|rabbitmq_queue_messages_published_total|rabbitmq_queue_messages_ready|rabbitmq_queue_messages_unacked|rabbitmq_queues|rabbitmq_queues_created_total|rabbitmq_queues_declared_total|rabbitmq_queues_deleted_total|rabbitmq_resident_memory_limit_bytes"
+          action        = "keep"
+        }
+      }
+
+      prometheus.scrape "rabbitmq" {
+        targets         = discovery.kubernetes.rabbitmq_pods.targets
+        scrape_interval = "1m"          // tune to taste
+        metrics_path    = "/metrics"    // default, included for clarity
+        forward_to      = [prometheus.remote_write.default.receiver]
+        job_name        = "integrations/rabbitmq"
+      }
+
+      // Wire this to your Prometheus-compatible backend (Grafana Mimir, Prometheus, Grafana Cloud, etc.)
+      prometheus.remote_write "default" {
+        endpoint {
+          url = sys.env("GRAFANA_METRICS_URL")
+          basic_auth {
+            username = sys.env("GRAFANA_METRICS_USER")
+            password = sys.env("GRAFANA_ACCESS_TOKEN")
+          }
+        }
+      }
+
+  # https://raw.githubusercontent.com/grafana/alloy/main/operations/helm/charts/alloy/values.yaml
+  extraEnv:
+    - name: GRAFANA_METRICS_URL
+      value: "$GRAFANA_METRICS_URL"
+    - name: GRAFANA_METRICS_USER
+      value: "$GRAFANA_METRICS_USER"
+    - name: GRAFANA_ACCESS_TOKEN
+      value: "$GRAFANA_ACCESS_TOKEN"
