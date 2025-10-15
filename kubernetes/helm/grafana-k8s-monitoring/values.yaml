@@ -100,6 +100,33 @@ podLogs:
     # to avoid confusion we only want logs sent through alloy-receiver
     - otel-demo
     - otel-demo-local
+  # # https://github.com/grafana/k8s-monitoring-helm/tree/main/charts/k8s-monitoring/charts/feature-pod-logs#log-processing
+  # labelsToKeep:
+  #   - "app_kubernetes_io_name"
+  #   - "container"
+  #   - "instance"
+  #   - "job"
+  #   - "level"
+  #   - "namespace"
+  #   - "service_name"
+  #   - "service_namespace"
+  #   - "deployment_environment"
+  #   - "deployment_environment_name"
+  #   - "k8s_namespace_name"
+  #   - "k8s_deployment_name"
+  #   - "k8s_statefulset_name"
+  #   - "k8s_daemonset_name"
+  #   - "k8s_cronjob_name"
+  #   - "k8s_job_name"
+  #   - "k8s_node_name"
+  # gatherMethod: kubernetesApi
+  # namespaces:
+  #   - meta
+  #   - loki
+  # # This is the section that specifies to send k8s.pod.name and service.instance.id to structured metadata
+  # structuredMetadata:
+  #   instance_id:
+  #   pod:
 
 applicationObservability:
   enabled: true
