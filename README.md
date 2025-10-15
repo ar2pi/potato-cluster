@@ -181,6 +181,8 @@ kubectl create namespace rabbitmq
 kubectl replace --force -f kubernetes/resources/rabbitmq/
 ```
 
+Install dashboards from https://ar2p2.grafana.net/connections/add-new-connection/rabbitmq
+
 ## Generate some traffic through k6
 
 Prerequisites: [k6](https://grafana.com/docs/k6/latest/set-up/install-k6)
