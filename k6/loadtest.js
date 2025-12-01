@@ -34,6 +34,7 @@ export default function () {
       if (exec.instance.vusActive > 4) {
         for (let i = 0; i < exec.instance.vusActive - 4; i++) {
           fetch('http://localhost:8000/fail?with_mem_leak=1');
+          fetch('http://localhost:8000/fail?with_mem_leak=1');
         }
       } else {
         if (randomTimeMs > 1000) {
