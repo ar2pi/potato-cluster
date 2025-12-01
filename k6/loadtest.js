@@ -27,7 +27,7 @@ export default function () {
   const now = new Date();
   const currentMinute = now.getMinutes();
 
-  // fail every 2d minute
+  // fail every 2 minutes
   if (currentMinute % 2 === 0) {
     // 50% /fail if vu > 4, else /wait
     if (randomInt === 1) {

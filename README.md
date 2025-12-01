@@ -191,10 +191,11 @@ Prerequisites: [k6](https://grafana.com/docs/k6/latest/set-up/install-k6)
 while true; do k6 run k6/loadtest.js; done
 
 # to send k6 metrics to grafana cloud via prom remote write (optional):
+export $(cat kubernetes/helm/grafana-k8s-monitoring/.env | xargs)
 while true; do
-    K6_PROMETHEUS_RW_USERNAME="$K6_PROMETHEUS_RW_USERNAME" \
-    K6_PROMETHEUS_RW_PASSWORD="$K6_PROMETHEUS_RW_PASSWORD" \
-    K6_PROMETHEUS_RW_SERVER_URL="$K6_PROMETHEUS_RW_SERVER_URL" \
+    K6_PROMETHEUS_RW_USERNAME="$GRAFANA_METRICS_USER" \
+    K6_PROMETHEUS_RW_PASSWORD="$GRAFANA_ACCESS_TOKEN" \
+    K6_PROMETHEUS_RW_SERVER_URL="$GRAFANA_METRICS_URL" \
     k6 run -o experimental-prometheus-rw k6/loadtest.js
 done
 
