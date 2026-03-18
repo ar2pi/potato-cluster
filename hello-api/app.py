@@ -135,8 +135,14 @@ async def log_requests(request: Request, call_next: Callable):
         raise e
 
 
+@app.get("/hello")
+async def hello():
+    logger.debug(f"Hello, world!")
+    return {"message": "Hello, world!"}
+
+
 @app.get("/hello/{name}")
-async def hello(name: str = "world"):
+async def hello_name(name: str = "world"):
     logger.debug(f"Hello, {name}!")
     return {"message": f"Hello, {name}!"}
 
