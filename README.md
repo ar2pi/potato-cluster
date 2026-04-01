@@ -112,7 +112,7 @@ On the remote machine, set up a cron job that runs [`scripts/sync-otel-demo.sh`]
 
 ```sh
 # add a cron job (runs every 2 minutes)
-(crontab -l 2>/dev/null; echo "*/2 * * * * /path/to/potato-cluster/scripts/sync-otel-demo.sh /path/to/potato-cluster >> /tmp/sync-otel-demo.log 2>&1") | crontab -
+(crontab -l 2>/dev/null; echo "*/2 * * * * /path/to/potato-cluster/scripts/sync-otel-demo.sh >> /tmp/sync-otel-demo.log 2>&1") | crontab -
 ```
 
 > NOTE: Replace `/path/to/potato-cluster` with the actual repo path on the remote machine. Adjust the cron interval as needed.

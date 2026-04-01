@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-REPO_DIR="${1:?Usage: $0 /path/to/potato-cluster}"
+REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 cd "$REPO_DIR"
 
