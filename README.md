@@ -112,7 +112,7 @@ On the remote machine, set up a cron job that runs [`scripts/sync-otel-demo.sh`]
 
 ```sh
 # add a cron job (runs every 2 minutes)
-(crontab -l 2>/dev/null; echo "*/2 * * * * /path/to/potato-cluster/scripts/sync-otel-demo.sh >> /tmp/sync-otel-demo.log 2>&1") | crontab -
+(crontab -l 2>/dev/null; echo "*/2 * * * * /path/to/potato-cluster/scripts/sync-otel-demo.sh >> /tmp/otel-demo-cron.log 2>&1") | crontab -
 ```
 
 > NOTE: Replace `/path/to/potato-cluster` with the actual repo path on the remote machine. Adjust the cron interval as needed.
@@ -122,7 +122,7 @@ On the remote machine, set up a cron job that runs [`scripts/sync-otel-demo.sh`]
 [`scripts/oom-kafka.sh`](scripts/oom-kafka.sh) resets the Kafka memory limit to 512Mi (enough to trigger OOM), commits, and pushes. The [sync script](#auto-sync-from-git) on the remote machine will pick up the change and apply it. This way, even if someone fixes the memory limit in git, it gets reverted back to OOM-inducing levels.
 
 ```sh
-(crontab -l 2>/dev/null; echo "*/30 * * * * /path/to/potato-cluster/scripts/oom-kafka.sh >> /tmp/oom-kafka.log 2>&1") | crontab -
+(crontab -l 2>/dev/null; echo "*/30 * * * * /path/to/potato-cluster/scripts/oom-kafka.sh >> /tmp/otel-demo-cron.log 2>&1") | crontab -
 ```
 
 ## Python API with OTLP instrumentation
