@@ -108,30 +108,11 @@ kubectl -n otel-demo port-forward svc/frontend-proxy 8080:8080
 
 Automatically pull changes to `kubernetes/helm/otel-demo/values.yaml` and run a helm upgrade on a remote machine.
 
-On the remote machine, set up a cron job that periodically checks for changes and applies them:
+On the remote machine, set up a cron job that runs [`scripts/sync-otel-demo.sh`](scripts/sync-otel-demo.sh):
 
 ```sh
-# create the sync script
-cat << 'SCRIPT' > /path/to/potato-cluster/sync-otel-demo.sh
-#!/bin/bash
-set -euo pipefail
-
-cd /path/to/potato-cluster
-
-git fetch origin main
-
-if git diff --name-only HEAD origin/main | grep -q 'kubernetes/helm/otel-demo/values.yaml'; then
-  git pull origin main
-  helm upgrade --install --create-namespace -n otel-demo \
-    -f kubernetes/helm/otel-demo/values.yaml \
-    otel-demo open-telemetry/opentelemetry-demo
-fi
-SCRIPT
-
-chmod +x /path/to/potato-cluster/sync-otel-demo.sh
-
 # add a cron job (runs every 2 minutes)
-(crontab -l 2>/dev/null; echo "*/2 * * * * /path/to/potato-cluster/sync-otel-demo.sh >> /tmp/sync-otel-demo.log 2>&1") | crontab -
+(crontab -l 2>/dev/null; echo "*/2 * * * * /path/to/potato-cluster/scripts/sync-otel-demo.sh >> /tmp/sync-otel-demo.log 2>&1") | crontab -
 ```
 
 > NOTE: Replace `/path/to/potato-cluster` with the actual repo path on the remote machine. Adjust the cron interval as needed.
