@@ -12,7 +12,7 @@ components:
   kafka:
     resources:
       limits:
-        memory: 2048Mi
+        memory: 512Mi
 
 prometheus:
   enabled: false
