@@ -11,7 +11,7 @@ components:
   kafka:
     resources:
       limits:
-        memory: 1152Mi
+        memory: 896Mi
       requests:
         memory: 512Mi
 
