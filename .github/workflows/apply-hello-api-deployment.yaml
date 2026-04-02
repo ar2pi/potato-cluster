@@ -1,0 +1,62 @@
+name: Apply hello-api Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'kubernetes/resources/hello-api/hello-api-deployment.yaml'
+      - '.github/workflows/apply-hello-api-deployment.yaml'
+
+jobs:
+  apply-deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configure kubectl
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          mkdir -p ~/.kube
+          echo "$KUBE_CONFIG" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Verify deployment file exists
+        run: |
+          if [ ! -f kubernetes/resources/hello-api/hello-api-deployment.yaml ]; then
+            echo "ERROR: Deployment file not found!"
+            exit 1
+          fi
+          echo "Deployment file found. Contents:"
+          cat kubernetes/resources/hello-api/hello-api-deployment.yaml
+
+      - name: Apply hello-api deployment
+        run: |
+          echo "Applying hello-api deployment with 384Mi memory limit..."
+          kubectl apply -f kubernetes/resources/hello-api/hello-api-deployment.yaml
+          
+      - name: Verify deployment
+        run: |
+          echo "Waiting for deployment to be ready..."
+          kubectl rollout status deployment/hello-api -n default --timeout=5m
+          
+          echo "Verifying memory limits are applied..."
+          kubectl get deployment hello-api -o jsonpath='{.spec.template.spec.containers[0].resources.limits.memory}'
+          echo ""
+          
+          echo "Current pod status:"
+          kubectl get pods -l app=hello-api -o wide
+
+      - name: Report success
+        if: success()
+        run: |
+          echo "✅ hello-api deployment successfully applied with 384Mi memory limit"
+          echo "All pods should now have memory limits configured to prevent OOM kills"
