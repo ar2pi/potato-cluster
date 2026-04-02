@@ -163,6 +163,37 @@ k9s -n hello-api -c pods
 kubectl port-forward -n hello-api svc/nginx-reverse-proxy 8000:8000
 ```
 
+### Auto-sync from git
+
+Automatically pull changes to `kubernetes/resources/hello-api/` and apply them to the cluster on a remote machine.
+
+On the remote machine, set up a cron job that runs [`scripts/sync-hello-api.sh`](scripts/sync-hello-api.sh):
+
+```sh
+# add a cron job (runs every 2 minutes)
+(crontab -l 2>/dev/null; echo "*/2 * * * * /path/to/potato-cluster/scripts/sync-hello-api.sh >> /tmp/hello-api-cron.log 2>&1") | crontab -
+```
+
+> NOTE: Replace `/path/to/potato-cluster` with the actual repo path on the remote machine. Adjust the cron interval as needed.
+
+### Troubleshooting OOMKills
+
+If hello-api pods are experiencing OOMKills (Out of Memory kills):
+
+1. **Check for config drift** - Verify cluster state matches repository:
+   ```sh
+   # Run the fix script
+   ./scripts/apply-hello-api-fix.sh
+   ```
+
+2. **Follow the runbook** - See [KubeContainerOomKiller Runbook](docs/runbooks/KubeContainerOomKiller.md) for detailed diagnosis and resolution steps.
+
+3. **Monitor memory usage**:
+   ```sh
+   kubectl top pods -n hello-api
+   kubectl get pods -n hello-api -o wide
+   ```
+
 ## Deploy standalone alloy for profiles
 
 [Grafana Alloy Helm chart](https://github.com/grafana/alloy/tree/main/operations/helm/charts/alloy)
