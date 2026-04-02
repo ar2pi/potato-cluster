@@ -9,11 +9,14 @@ default:
 
 components:
   kafka:
+    env:
+      - name: KAFKA_HEAP_OPTS
+        value: "-Xms1152m -Xmx1152m"
     resources:
       limits:
-        memory: 512Mi
+        memory: 1536Mi
       requests:
-        memory: 512Mi
+        memory: 1536Mi
 
 prometheus:
   enabled: false
