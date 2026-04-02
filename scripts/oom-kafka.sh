@@ -2,10 +2,9 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+VALUES_FILE="kubernetes/helm/otel-demo/values.yaml"
 
 cd "$REPO_DIR"
-
-VALUES_FILE="kubernetes/helm/otel-demo/values.yaml"
 
 sed -i'' -e 's/memory: [0-9]*Mi/memory: 512Mi/' "$VALUES_FILE"
 
