@@ -156,7 +156,7 @@ applicationObservability:
       enabled: true
   connectors:
     grafanaCloudMetrics:
-      enabled: false
+      enabled: true
   # processors:
   #   attributes:
   #     actions:
