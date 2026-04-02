@@ -9,6 +9,9 @@ default:
 
 components:
   kafka:
+    env:
+      - name: KAFKA_HEAP_OPTS
+        value: "-Xms864m -Xmx864m"
     resources:
       limits:
         memory: 1152Mi
