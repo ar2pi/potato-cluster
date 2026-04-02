@@ -15,7 +15,7 @@ if git diff --quiet "$VALUES_FILE"; then
 fi
 
 git add "$VALUES_FILE"
-git commit -m "chaos: reset kafka memory limit to 896Mi"
+git commit -m "chaos: reset kafka memory limit to 1024Mi"
 git push
 
 helm upgrade --install --create-namespace -n otel-demo \
