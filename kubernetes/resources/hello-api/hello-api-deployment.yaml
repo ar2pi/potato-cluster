@@ -40,6 +40,10 @@ spec:
             - "0.0.0.0"
             - "--port"
             - "8000"
+          # OOM RECURRENCE TRACKING:
+          # 2026-04-02T18:32:40Z - Config drift recurred. Despite this yaml having 384Mi,
+          # cluster was running 128Mi causing OOMKills. Manual kubectl apply required.
+          # See Issue #59 for full incident tracking and prevention action items.
           resources:
             limits:
               cpu: "500m"
