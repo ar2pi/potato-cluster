@@ -16,3 +16,7 @@ fi
 git add "$VALUES_FILE"
 git commit -m "reset kafka memory limit to 512Mi"
 git push
+
+helm upgrade --install --create-namespace -n otel-demo \
+  -f "$VALUES_FILE" \
+  otel-demo open-telemetry/opentelemetry-demo
