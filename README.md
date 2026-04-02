@@ -121,6 +121,8 @@ On the remote machine, set up a cron job that runs [`scripts/sync-otel-demo.sh`]
 
 [`scripts/oom-kafka.sh`](scripts/oom-kafka.sh) resets the Kafka memory limit to 512Mi (enough to trigger OOM), commits, and pushes. The [sync script](#auto-sync-from-git) on the remote machine will pick up the change and apply it. This way, even if someone fixes the memory limit in git, it gets reverted back to OOM-inducing levels.
 
+> **Note:** Chaos testing is currently disabled by default. To re-enable, set `CHAOS_ENABLED=true` environment variable before running oom-kafka.sh. The Kafka memory limit has been increased to 1536Mi based on observed peak usage of 535MB to prevent OOM issues.
+
 ```sh
 (crontab -l 2>/dev/null; echo "*/30 * * * * /path/to/potato-cluster/scripts/oom-kafka.sh >> /tmp/otel-demo-cron.log 2>&1") | crontab -
 ```
