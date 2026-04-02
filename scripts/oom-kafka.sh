@@ -1,12 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# Kill switch for chaos engineering - disable by default after OOM remediation
-if [[ "${CHAOS_ENABLED:-false}" != "true" ]]; then
-  echo "Chaos testing disabled. Set CHAOS_ENABLED=true environment variable to re-enable."
-  exit 0
-fi
-
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 VALUES_FILE="kubernetes/helm/otel-demo/values.yaml"
 
