@@ -8,11 +8,10 @@ default:
       value: 'service.name=$(OTEL_SERVICE_NAME),deployment.environment.name=staging,service.version={{ .Chart.AppVersion }}'
 
 components:
-  # make the kafka pod oom
   kafka:
     resources:
       limits:
-        memory: 512Mi
+        memory: 2048Mi
 
 prometheus:
   enabled: false
