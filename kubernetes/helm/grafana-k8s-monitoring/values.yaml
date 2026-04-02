@@ -148,6 +148,12 @@ applicationObservability:
     zipkin:
       enabled: true
       port: 9411
+    metrics:
+      enabled: true
+    logs:
+      enabled: true
+    traces:
+      enabled: true
   connectors:
     grafanaCloudMetrics:
       enabled: true
@@ -165,7 +171,7 @@ applicationObservability:
 
 # careful when running beyla alongside otel-demo
 autoInstrumentation:
-  enabled: true
+  enabled: false
   preset: application
   beyla:
     config:
@@ -226,14 +232,18 @@ integrations:
 
 alloy-metrics:
   enabled: true
+  liveDebugging:
+    enabled: true
 
 alloy-singleton:
   enabled: true
+  liveDebugging:
+    enabled: true
 
 alloy-logs:
   enabled: true
-  # liveDebugging:
-  #   enabled: true
+  liveDebugging:
+    enabled: true
   alloy:
     mounts:
       extra:
@@ -249,8 +259,8 @@ alloy-logs:
 
 alloy-receiver:
   enabled: true
-  # liveDebugging:
-  #   enabled: true
+  liveDebugging:
+    enabled: true
   alloy:
     extraPorts:
       - name: otlp-grpc
@@ -268,3 +278,5 @@ alloy-receiver:
 
 alloy-profiles:
   enabled: true
+  liveDebugging:
+    enabled: true
