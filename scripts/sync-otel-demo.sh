@@ -4,6 +4,8 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 VALUES_FILE="kubernetes/helm/otel-demo/values.yaml"
 
+echo "Syncing otel demo with latest values from git"
+
 cd "$REPO_DIR"
 
 git fetch origin main
