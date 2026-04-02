@@ -14,12 +14,6 @@ components:
         memory: 1024Mi
       requests:
         memory: 1024Mi
-  accountingService:
-    resources:
-      limits:
-        memory: 512Mi
-      requests:
-        memory: 512Mi
 
 prometheus:
   enabled: false
