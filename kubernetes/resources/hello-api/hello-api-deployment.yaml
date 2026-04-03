@@ -1,4 +1,5 @@
 # Applied to cluster: 2026-04-03T11:15:13Z - Triggered by OOM incident #76
+# Updated: 2026-04-03 - Triggering pipeline to apply 384Mi limit (Issue #78)
 # This deployment resolves config drift (384Mi memory limit)
 ---
 apiVersion: apps/v1
@@ -6,6 +7,9 @@ kind: Deployment
 metadata:
   name: hello-api
   namespace: hello-api
+  annotations:
+    # Trigger deployment application to resolve config drift
+    deployment.kubernetes.io/revision-trigger: "2026-04-03-issue-78-oom-fix"
 spec:
   replicas: 3
   selector:
