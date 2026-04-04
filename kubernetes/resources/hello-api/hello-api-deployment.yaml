@@ -1,6 +1,7 @@
 # Applied to cluster: 2026-04-03T11:15:13Z - Triggered by OOM incident #76
 # Updated: 2026-04-03 - Triggering pipeline to apply 384Mi limit (Issue #78)
 # This deployment resolves config drift (384Mi memory limit)
+# Applied 2026-04-04T06:17:13Z - Incident #82 remediation (5th config drift occurrence)
 ---
 apiVersion: apps/v1
 kind: Deployment
