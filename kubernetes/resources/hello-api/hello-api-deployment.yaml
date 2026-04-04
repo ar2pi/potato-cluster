@@ -11,7 +11,7 @@ metadata:
   namespace: hello-api
   annotations:
     # Trigger deployment application to resolve config drift
-    deployment.kubernetes.io/revision-trigger: "2026-04-03-issue-78-oom-fix"
+    deployment.kubernetes.io/revision-trigger: "2026-04-04-incident-88-oom-remediation"
 spec:
   replicas: 3
   selector:
