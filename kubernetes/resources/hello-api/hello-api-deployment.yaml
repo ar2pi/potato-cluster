@@ -1,3 +1,7 @@
+# Incident #87 remediation - 2026-04-04T11:53Z - Force apply 384Mi limit (Issue #92)
+# Peak memory: 132.5MB | Limit: 384Mi provides 2.9x headroom
+# Trigger: 7th OOM incident in 48 hours due to config drift
+# Previous incidents: #84, #85, #86, #88 - all due to pods running 128Mi vs configured 384Mi
 # Reapply fix for incident #86 - 2026-04-04T08:17Z - Config drift to 128Mi
 # Applied to cluster: 2026-04-03T11:15:13Z - Triggered by OOM incident #76
 # Updated: 2026-04-03 - Triggering pipeline to apply 384Mi limit (Issue #78)
@@ -10,8 +14,8 @@ metadata:
   name: hello-api
   namespace: hello-api
   annotations:
-    # Trigger deployment application to resolve config drift
-    deployment.kubernetes.io/revision-trigger: "2026-04-04-incident-88-oom-remediation"
+    # Trigger deployment application to resolve config drift - Incident #87 (Issue #92)
+    deployment.kubernetes.io/revision-trigger: "2026-04-04-incident-87-oom-remediation"
 spec:
   replicas: 3
   selector:
