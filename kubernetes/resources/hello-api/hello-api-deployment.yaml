@@ -1,12 +1,11 @@
-# Incident #87 remediation - 2026-04-04T11:53Z - Force apply 384Mi limit (Issue #92)
-# Peak memory: 132.5MB | Limit: 384Mi provides 2.9x headroom
-# Trigger: 7th OOM incident in 48 hours due to config drift
-# Previous incidents: #84, #85, #86, #88 - all due to pods running 128Mi vs configured 384Mi
-# Reapply fix for incident #86 - 2026-04-04T08:17Z - Config drift to 128Mi
-# Applied to cluster: 2026-04-03T11:15:13Z - Triggered by OOM incident #76
-# Updated: 2026-04-03 - Triggering pipeline to apply 384Mi limit (Issue #78)
-# This deployment resolves config drift (384Mi memory limit)
-# Applied 2026-04-04T06:17:13Z - Incident #82 remediation (5th config drift occurrence)
+# Incident #87 remediation - OOMKill at 01:19:16 UTC - Force apply 384Mi limit
+# Peak memory: 109MB (from specialist report) | Configured limit: 384Mi provides 3.5x headroom
+# Runbook calculated minimum: 192Mi (109MB × 1.5 rounded to 128Mi boundary)
+# Current config: 384Mi (CORRECT) | Cluster state: 84-107MB (DRIFTED)
+# Root cause: 7th config drift occurrence - manual kubectl applies overriding GitOps
+# Previous incidents: #84, #85, #86, #88, #82, #76, #78 - all config drift related
+# Action: Force reapply 384Mi limit from Git to cluster via deployment trigger
+# Long-term fix required: Implement GitOps enforcement (see Issue #59)
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -14,8 +13,8 @@ metadata:
   name: hello-api
   namespace: hello-api
   annotations:
-    # Trigger deployment application to resolve config drift - Incident #87 (Issue #92)
-    deployment.kubernetes.io/revision-trigger: "2026-04-04-incident-87-oom-remediation"
+    # Force apply to resolve config drift - OOMKill incident at 01:19:16 UTC
+    deployment.kubernetes.io/revision-trigger: "2026-oomkill-01-19-16-utc-force-apply-384mi"
 spec:
   replicas: 3
   selector:
