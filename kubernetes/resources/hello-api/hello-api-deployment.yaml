@@ -1,11 +1,12 @@
-# Incident #87 remediation - OOMKill at 01:19:16 UTC - Force apply 384Mi limit
+# Incident #8 remediation - OOMKill at 2026-04-05T01:48:40Z - Force apply 384Mi limit
 # Peak memory: 109MB (from specialist report) | Configured limit: 384Mi provides 3.5x headroom
 # Runbook calculated minimum: 192Mi (109MB × 1.5 rounded to 128Mi boundary)
-# Current config: 384Mi (CORRECT) | Cluster state: 84-107MB (DRIFTED)
-# Root cause: 7th config drift occurrence - manual kubectl applies overriding GitOps
-# Previous incidents: #84, #85, #86, #88, #82, #76, #78 - all config drift related
-# Action: Force reapply 384Mi limit from Git to cluster via deployment trigger
+# Current config: 384Mi (CORRECT) | Cluster state: 128Mi (DRIFTED - config drift detected)
+# Root cause: 8th config drift occurrence - unknown process reverting to 128Mi
+# Previous incidents: #76, #78, #82, #84, #86, #87 - all config drift related
+# Action: Trigger commit to force reapply 384Mi limit from Git to cluster
 # Long-term fix required: Implement GitOps enforcement (see Issue #59)
+# This is a trigger commit - no actual value changes needed (384Mi is already correct)
 ---
 apiVersion: apps/v1
 kind: Deployment
