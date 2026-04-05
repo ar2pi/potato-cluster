@@ -13,8 +13,8 @@ metadata:
   name: hello-api
   namespace: hello-api
   annotations:
-    # Force apply to resolve config drift - Incident #8 - 2026-04-05T01:48:40Z
-    deployment.kubernetes.io/revision-trigger: "incident-8-2026-04-05T01-48-40Z-force-apply-384mi"
+    # Force apply to resolve config drift - OOMKill incident at 01:19:16 UTC
+    deployment.kubernetes.io/revision-trigger: "2026-oomkill-01-19-16-utc-force-apply-384mi"
 spec:
   replicas: 3
   selector:
@@ -108,4 +108,4 @@ spec:
         #     initialDelaySeconds: 5
         #     periodSeconds: 5
         #     failureThreshold: 11
-# Applied: 2026-04-04T10:47:13Z - Incident #8 (Issue #90) - Config drift fix
+# Applied: 2026-04-05T01:54:00Z - Incident #8 - Config drift fix (128Mi→384Mi reapplication)
