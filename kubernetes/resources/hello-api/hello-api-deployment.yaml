@@ -1,10 +1,10 @@
-# Incident #9 remediation - 2026-04-05T04:18:40Z - Reapply 384Mi after config drift
-# Alert: grafana_slo_uuid: 7cflc0k8m0017gcgbwda3 (SLO breach)
-# Peak memory: 118.93MB (92.76% of incorrect 128Mi limit)
-# Configured limit: 384Mi (CORRECT in repo) provides 3.2x headroom
-# Root cause: 9th config drift occurrence - cluster running 128Mi vs repo 384Mi
-# Trigger: Load test on /fail?with_mem_leak=1 endpoint (intentional memory leak)
-# Previous incidents: #98 (#8), #94 (#87), #88, #86, #85, #84, #82, #81, #76
+# Incident #8 remediation - 2026-04-05T05:48:40Z - Reapply 384Mi after config drift
+# Peak memory: 127.7 MiB (99.6% of incorrect 128Mi limit)
+# Configured limit: 384Mi (CORRECT in repo) provides 3.0x headroom
+# Root cause: Config drift - cluster running 128Mi vs repo 384Mi
+# Runbook minimum: 256 MiB (1.5× 127.7 MiB = 191.55 MiB, rounded up)
+# Repository value: 384Mi (exceeds minimum, already correct)
+# Previous incidents: #100 (#9 @ 04:18:40Z), #98 (#8 @ 02:18:40Z), #94 (#87), #88, #86, #85, #84, #82, #81, #76
 # Action: Force reapply 384Mi limit from Git to cluster
 # Long-term fix CRITICAL: Implement GitOps enforcement (see Issue #80)
 ---
@@ -14,8 +14,8 @@ metadata:
   name: hello-api
   namespace: hello-api
   annotations:
-    # Force apply to resolve config drift - Incident #9 at 2026-04-05T04:18:40Z
-    deployment.kubernetes.io/revision-trigger: "2026-04-05-incident-9-config-drift-384mi"
+    # Force apply to resolve config drift - Incident #8 at 2026-04-05T05:48:40Z
+    deployment.kubernetes.io/revision-trigger: "2026-04-05-incident-8-05-48-40z-config-drift-384mi"
 spec:
   replicas: 3
   selector:
