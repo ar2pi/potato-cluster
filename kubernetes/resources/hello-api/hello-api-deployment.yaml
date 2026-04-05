@@ -58,6 +58,7 @@ spec:
           resources:
             limits:
               cpu: "500m"
+              # Incident #9 fix - 2026-04-05T03:18:40Z - Reapplying 384Mi limit after config drift
               memory: "384Mi"  # Changed from 256Mi (1.5x peak usage for safety)
             requests:
               cpu: "250m"
