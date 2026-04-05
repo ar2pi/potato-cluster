@@ -1,11 +1,12 @@
-# Incident #87 remediation - OOMKill at 01:19:16 UTC - Force apply 384Mi limit
-# Peak memory: 109MB (from specialist report) | Configured limit: 384Mi provides 3.5x headroom
-# Runbook calculated minimum: 192Mi (109MB × 1.5 rounded to 128Mi boundary)
-# Current config: 384Mi (CORRECT) | Cluster state: 84-107MB (DRIFTED)
-# Root cause: 7th config drift occurrence - manual kubectl applies overriding GitOps
-# Previous incidents: #84, #85, #86, #88, #82, #76, #78 - all config drift related
-# Action: Force reapply 384Mi limit from Git to cluster via deployment trigger
-# Long-term fix required: Implement GitOps enforcement (see Issue #59)
+# Incident #8 remediation - 2026-04-05T05:48:40Z - Reapply 384Mi after config drift
+# Peak memory: 127.7 MiB (99.6% of incorrect 128Mi limit)
+# Configured limit: 384Mi (CORRECT in repo) provides 3.0x headroom
+# Root cause: Config drift - cluster running 128Mi vs repo 384Mi
+# Runbook minimum: 256 MiB (1.5× 127.7 MiB = 191.55 MiB, rounded up to 256 MiB)
+# Repository value: 384Mi (exceeds minimum, already correct)
+# Previous incidents: #98 (#8 @ 02:18:40Z), #94 (#87), #88, #86, #85, #84, #82, #81, #76
+# Action: Force reapply 384Mi limit from Git to cluster
+# Long-term fix CRITICAL: Implement GitOps enforcement (see Issue #80)
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -13,8 +14,8 @@ metadata:
   name: hello-api
   namespace: hello-api
   annotations:
-    # Force apply to resolve config drift - OOMKill incident at 01:19:16 UTC
-    deployment.kubernetes.io/revision-trigger: "2026-oomkill-01-19-16-utc-force-apply-384mi"
+    # Force apply to resolve config drift - Incident #8 at 2026-04-05T05:48:40Z
+    deployment.kubernetes.io/revision-trigger: "2026-04-05-incident-8-05-48-40z-config-drift-384mi"
 spec:
   replicas: 3
   selector:
@@ -52,16 +53,17 @@ spec:
             - "--port"
             - "8000"
           # OOM RECURRENCE TRACKING:
-          # 2026-04-02T18:32:40Z - Config drift recurred. Despite this yaml having 384Mi,
-          # cluster was running 128Mi causing OOMKills. Manual kubectl apply required.
-          # See Issue #59 for full incident tracking and prevention action items.
+          # 2026-04-05T05:48:40Z - Incident #8 - Config drift recurred. Despite this yaml having 384Mi,
+          # cluster was running 128Mi causing OOMKills. Peak memory: 127.7 MiB.
+          # Following KubeContainerOomKiller runbook for auto-remediation.
+          # See Issue #98 for full incident tracking and prevention action items.
           resources:
             limits:
               cpu: "500m"
-              memory: "384Mi"  # Changed from 256Mi (1.5x peak usage for safety)
+              memory: "384Mi"  # Runbook minimum: 256Mi (1.5x peak) - 384Mi exceeds requirement
             requests:
               cpu: "250m"
-              memory: "256Mi"  # Changed from 128Mi (double current to prevent OOM)
+              memory: "256Mi"
           readinessProbe:
             httpGet:
               path: /health
@@ -108,4 +110,4 @@ spec:
         #     initialDelaySeconds: 5
         #     periodSeconds: 5
         #     failureThreshold: 11
-# Applied: 2026-04-05T01:54:00Z - Incident #8 - Config drift fix (128Mi→384Mi reapplication)
+# Applied: 2026-04-05T05:48:40Z - Incident #8 - Config drift fix (128Mi→384Mi reapplication)
