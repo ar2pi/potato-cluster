@@ -2,14 +2,14 @@ cluster:
   name: potato
 
 destinations:
-  - name: grafana-cloud-metrics
+  grafana-cloud-metrics:
     type: prometheus
     url: $GRAFANA_METRICS_URL
     auth:
       type: basic
       username: "$GRAFANA_METRICS_USER"
       password: $GRAFANA_ACCESS_TOKEN
-  - name: grafana-cloud-logs
+  grafana-cloud-logs:
     type: loki
     # make sure 'k8s.cluster.name' resource attribute is used as label
     # it's otlp convention and using unindexed cluster label breaks
@@ -22,7 +22,7 @@ destinations:
       type: basic
       username: "$GRAFANA_LOGS_USER"
       password: $GRAFANA_ACCESS_TOKEN
-  - name: grafana-cloud-otlp-endpoint
+  grafana-cloud-otlp-endpoint:
     type: otlp
     # make sure 'k8s.cluster.name' resource attribute is used as label
     # it's otlp convention and using unindexed cluster label breaks
@@ -66,7 +66,7 @@ destinations:
       enabled: true
     traces:
       enabled: true
-  - name: grafana-cloud-profiles
+  grafana-cloud-profiles:
     type: pyroscope
     url: $GRAFANA_PROFILES_URL
     auth:
@@ -74,37 +74,87 @@ destinations:
       username: "$GRAFANA_PROFILES_USER"
       password: $GRAFANA_ACCESS_TOKEN
 
+collectors:
+  alloy-metrics:
+    presets: [clustered, statefulset]
+    liveDebugging:
+      enabled: true
+
+  alloy-singleton:
+    presets: [singleton]
+    liveDebugging:
+      enabled: true
+
+  alloy-logs:
+    presets: [filesystem-log-reader, daemonset]
+    liveDebugging:
+      enabled: true
+    alloy:
+      mounts:
+        extra:
+          - name: var-log-journal
+            mountPath: /run/log/journal
+    controller:
+      volumes:
+        extra:
+          - name: var-log-journal
+            hostPath:
+              path: /run/log/journal
+              type: DirectoryOrCreate
+
+  alloy-receiver:
+    presets: [deployment]
+    liveDebugging:
+      enabled: true
+    alloy:
+      extraPorts:
+        - name: otlp-grpc
+          port: 4317
+          targetPort: 4317
+          protocol: TCP
+        - name: otlp-http
+          port: 4318
+          targetPort: 4318
+          protocol: TCP
+        - name: zipkin
+          port: 9411
+          targetPort: 9411
+          protocol: TCP
+
+  alloy-profiles:
+    presets: [privileged, daemonset]
+    liveDebugging:
+      enabled: true
+
 clusterMetrics:
   enabled: true
-  opencost:
-    enabled: true
-    metricsSource: grafana-cloud-metrics
-    opencost:
-      exporter:
-        defaultClusterId: potato
-      prometheus:
-        existingSecretName: grafana-cloud-metrics-grafana-k8s-monitoring
-        external:
-          url: $GRAFANA_CLUSTER_METRICS_URL
-  kepler:
-    enabled: true
+  collector: alloy-metrics
+
+costMetrics:
+  enabled: true
+  collector: alloy-metrics
 
 annotationAutodiscovery:
   enabled: true
+  collector: alloy-metrics
 
 prometheusOperatorObjects:
   enabled: false
+  collector: alloy-metrics
 
 clusterEvents:
   enabled: true
+  collector: alloy-singleton
 
 nodeLogs:
   enabled: true
+  collector: alloy-logs
   journal:
     path: /run/log/journal
 
-podLogs:
+podLogsViaLoki:
   enabled: true
+  collector: alloy-logs
   excludeNamespaces:
     # exclude otel-demo
     # to avoid confusion we only want logs sent through alloy-receiver
@@ -129,17 +179,10 @@ podLogs:
   #   - "k8s_cronjob_name"
   #   - "k8s_job_name"
   #   - "k8s_node_name"
-  # gatherMethod: kubernetesApi
-  # namespaces:
-  #   - meta
-  #   - loki
-  # # This is the section that specifies to send k8s.pod.name and service.instance.id to structured metadata
-  # structuredMetadata:
-  #   instance_id:
-  #   pod:
 
 applicationObservability:
   enabled: true
+  collector: alloy-receiver
   receivers:
     otlp:
       grpc:
@@ -217,6 +260,7 @@ autoInstrumentation:
 
 profiling:
   enabled: true
+  collector: alloy-profiles
 
 integrations:
   alloy:
@@ -230,53 +274,18 @@ integrations:
             - alloy-receiver
             - alloy-profiles
 
-alloy-metrics:
-  enabled: true
-  liveDebugging:
-    enabled: true
-
-alloy-singleton:
-  enabled: true
-  liveDebugging:
-    enabled: true
-
-alloy-logs:
-  enabled: true
-  liveDebugging:
-    enabled: true
-  alloy:
-    mounts:
-      extra:
-        - name: var-log-journal
-          mountPath: /run/log/journal
-  controller:
-    volumes:
-      extra:
-        - name: var-log-journal
-          hostPath:
-            path: /run/log/journal
-            type: DirectoryOrCreate
-
-alloy-receiver:
-  enabled: true
-  liveDebugging:
-    enabled: true
-  alloy:
-    extraPorts:
-      - name: otlp-grpc
-        port: 4317
-        targetPort: 4317
-        protocol: TCP
-      - name: otlp-http
-        port: 4318
-        targetPort: 4318
-        protocol: TCP
-      - name: zipkin
-        port: 9411
-        targetPort: 9411
-        protocol: TCP
-
-alloy-profiles:
-  enabled: true
-  liveDebugging:
-    enabled: true
+telemetryServices:
+  kepler:
+    deploy: true
+  opencost:
+    deploy: true
+    metricsSource: grafana-cloud-metrics
+    opencost:
+      exporter:
+        defaultClusterId: potato
+      prometheus:
+        existingSecretName: grafana-cloud-metrics-grafana-k8s-monitoring
+        external:
+          url: $GRAFANA_CLUSTER_METRICS_URL
+  kube-state-metrics:
+    deploy: true
