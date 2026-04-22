@@ -17,7 +17,7 @@ spec:
     args: ["-c", "import time; print('Sleeping for 5m...'); time.sleep(1); print('Wake Up!'); [print(f'Allocating {i * 10} Mi...') or memory.append(bytearray(40 * 1024 * 1024)) or time.sleep(9.375) for i, memory in enumerate([[]]*1000)]"]
     resources:
       limits:
-        memory: "2048Mi"
+        memory: "256Mi"
       requests:
         memory: "64Mi"
   terminationGracePeriodSeconds: 0
