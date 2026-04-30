@@ -8,9 +8,11 @@ default:
       value: 'service.name=$(OTEL_SERVICE_NAME),deployment.environment.name=staging,service.version={{ .Chart.AppVersion }}'
 
 components:
-  # Kafka memory limits: 1024Mi (OOMKill remediation - 2026-04-30 21:41:50Z)
-  # Previous limit: 512Mi, Peak usage: 508Mi (99.2% utilization)
-  # New limit provides 2x safety margin, accounts for JVM GC overhead
+  # Kafka memory limits: 1024Mi (OOMKill remediation - KubeContainerOomKiller runbook)
+  # Previous limit: 512Mi, Peak usage: 532MB (104% utilization)
+  # 365 restarts over 70 days - chronic OOM issue
+  # New limit provides 2x safety margin (within 2048Mi hard cap)
+  # Pod: kafka-5c5b4c769d-7fnrv in otel-demo namespace
   kafka:
     resources:
       limits:
