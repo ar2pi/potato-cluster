@@ -8,6 +8,9 @@ default:
       value: 'service.name=$(OTEL_SERVICE_NAME),deployment.environment.name=staging,service.version={{ .Chart.AppVersion }}'
 
 components:
+  # Kafka memory limits: 2048Mi (verified correct post-OOM incident 2026-04-30 21:08:50 UTC)
+  # Cluster had config drift (512Mi-1152Mi). Peak usage: 950Mi, recommended: 1425Mi
+  # This commit forces re-sync of repository config to cluster state
   kafka:
     resources:
       limits:
