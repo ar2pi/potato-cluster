@@ -8,18 +8,18 @@ default:
       value: 'service.name=$(OTEL_SERVICE_NAME),deployment.environment.name=staging,service.version={{ .Chart.AppVersion }}'
 
 components:
-  # Kafka memory limit increased to 1536Mi on 2026-05-01T09:30:00Z
-  # Root cause: OOMKiller alert fired at 09:20:50Z for pod kafka-5c5b4c769d-7fnrv
-  # Analysis: 24h peak usage = 964 MiB, current limit 512 MiB insufficient (200% over capacity)
-  # New limit: 1536Mi = 1.5× peak (rounded to 128Mi), within 2048Mi cap per runbook
-  # Previous incidents: 7 restarts in 90 minutes, 381 total restarts
+  # Kafka memory limit adjusted to 1024Mi on 2026-05-01T09:38:50Z
+  # Root cause: OOMKiller alert fired at 09:38:50Z
+  # Analysis: 24h peak usage = 486.56 MiB (95% of 512Mi limit)
+  # New limit: 1024Mi = 2× current limit (provides safety margin)
+  # Justification: Normal operational memory ~500MB sustained, needs headroom
   # Runbook: KubeContainerOomKiller - auto-remediation for otel-demo kafka
   kafka:
     resources:
       limits:
-        memory: 1446Mi
+        memory: 1024Mi
       requests:
-        memory: 1446Mi
+        memory: 1024Mi
 
 prometheus:
   enabled: false
