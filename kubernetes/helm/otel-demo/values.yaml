@@ -8,18 +8,17 @@ default:
       value: 'service.name=$(OTEL_SERVICE_NAME),deployment.environment.name=staging,service.version={{ .Chart.AppVersion }}'
 
 components:
-  # Kafka memory limit: 1024Mi (OOMKill remediation - KubeContainerOomKiller runbook)
-  # Incident: 2026-05-01T08:29:50Z, Alert: KubeContainerOomKiller
-  # Previous limit: 512Mi, Peak 24h usage: 510.7 MiB (99.7% of limit)
-  # Calculation: 2× peak = 1021 MiB, rounded to 1024Mi (per runbook)
-  # Max allowed: 2048Mi per runbook
-  # Pattern: Chronic issue (18 restarts in 24h, systemic: 8 containers OOM'd)
+  # Kafka memory limit: 767Mi (OOMKill remediation - KubeContainerOomKiller runbook)
+  # Incident: 2026-05-01T08:37:50Z, Alert: KubeContainerOomKiller
+  # Previous limit: 512Mi, Peak memory usage: 511 MiB (99.8% of 512 MiB limit)
+  # Chronic issue: 377 lifetime restarts, 6 in past 6 hours
+  # Calculation: 1.5× peak = 767 MiB (per runbook guidance)
   kafka:
     resources:
       limits:
-        memory: 1024Mi
+        memory: 767Mi
       requests:
-        memory: 1024Mi
+        memory: 767Mi
 
 prometheus:
   enabled: false
