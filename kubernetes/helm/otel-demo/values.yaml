@@ -8,18 +8,18 @@ default:
       value: 'service.name=$(OTEL_SERVICE_NAME),deployment.environment.name=staging,service.version={{ .Chart.AppVersion }}'
 
 components:
-  # Kafka memory limits: 2048Mi (OOMKill remediation - KubeContainerOomKiller runbook - HARD CAP)
-  # Incident: 2026-04-30T22:04:50Z, Alert: KubeContainerOomKiller
-  # Previous limit: 1024Mi, Peak usage: 467MB (91.3% of 512Mi prior to 1024Mi update)
-  # 15 restarts detected on pod kafka-5c5b4c769d-7fnrv
-  # New limit: 2048Mi hard cap per runbook (1.5x peak = 702Mi minimum, using max allowed)
-  # Runbook: Step 5 - Kafka in otel-demo hard cap enforcement
+  # Kafka memory limit: 768Mi (OOMKill remediation - KubeContainerOomKiller runbook)
+  # Incident: 2026-05-01T08:17:50Z, Alert: KubeContainerOomKiller
+  # Previous limit: 512Mi, Peak 24h usage: 510.7 MiB (99.7% of limit)
+  # Calculation: 1.5× peak = 766 MiB, rounded to 768Mi (128Mi boundary alignment)
+  # Max allowed: 2048Mi per runbook
+  # Pattern: Recurring chronic issue (97% utilization daily)
   kafka:
     resources:
       limits:
-        memory: 2048Mi
+        memory: 768Mi
       requests:
-        memory: 2048Mi
+        memory: 768Mi
 
 prometheus:
   enabled: false
