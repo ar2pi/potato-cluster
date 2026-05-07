@@ -8,26 +8,10 @@ default:
       value: 'service.name=$(OTEL_SERVICE_NAME),deployment.environment.name=staging,service.version={{ .Chart.AppVersion }}'
 
 components:
-  # Kafka memory limit adjusted to 1024Mi on 2026-05-01T09:38:50Z
-  # Root cause: OOMKiller alert fired at 09:38:50Z
-  # Analysis: 24h peak usage = 486.56 MiB (95% of 512Mi limit)
-  # New limit: 1024Mi = 2× current limit (provides safety margin)
-  # Justification: Normal operational memory ~500MB sustained, needs headroom
-  # Runbook: KubeContainerOomKiller - auto-remediation for otel-demo kafka
-  #
-  # JVM heap configuration added on 2026-05-01
-  # Observed heap usage: 582MB (208% of default 267MB)
-  # Setting explicit heap: 768Mi = 75% of container limit (industry best practice)
-  # Remaining 256Mi for: off-heap memory, OS page cache, and JVM overhead
   kafka:
-    env:
-      - name: KAFKA_HEAP_OPTS
-        value: "-Xms768m -Xmx768m"
     resources:
       limits:
-        memory: 1024Mi
-      requests:
-        memory: 1024Mi
+        memory: 512Mi
 
 prometheus:
   enabled: false
