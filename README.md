@@ -147,6 +147,7 @@ pip freeze > requirements.txt
 ```sh
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
+  --build-arg GIT_REF=$(git rev-parse HEAD) \
   -t ar2pi/hello-api \
   --push .
 ```

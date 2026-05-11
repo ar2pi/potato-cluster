@@ -89,6 +89,12 @@ pyroscope.configure(
         "namespace": "hello-api",
         "service_namespace": "hello-api",
         "service_name": "hello-api",
+        # https://grafana.com/docs/pyroscope/latest/view-and-analyze-profile-data/line-by-line/
+        "service_repository": os.getenv(
+            "SERVICE_REPOSITORY", "https://github.com/ar2pi/potato-cluster"
+        ),
+        "service_git_ref": os.getenv("SERVICE_GIT_REF", "main"),
+        "service_root_path": os.getenv("SERVICE_ROOT_PATH", "hello-api"),
     },
 )
 

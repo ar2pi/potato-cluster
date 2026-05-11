@@ -33,6 +33,15 @@ spec:
               value: "http://alloy-sdk-profiles.monitoring.svc.cluster.local:4041"
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: "service.namespace=hello-api,service.name=hello-api,deployment.environment.name=production"
+            - name: OTEL_SEMCONV_STABILITY_OPT_IN
+              value: "http"
+            # Pyroscope GitHub source code integration
+            # https://grafana.com/docs/pyroscope/latest/view-and-analyze-profile-data/line-by-line/
+            # SERVICE_GIT_REF is baked into the image at build time via --build-arg GIT_REF=$(git rev-parse HEAD)
+            - name: SERVICE_REPOSITORY
+              value: "https://github.com/ar2pi/potato-cluster"
+            - name: SERVICE_ROOT_PATH
+              value: "hello-api"
           command: ["uvicorn"]
           args:
             - "app:app"

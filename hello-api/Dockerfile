@@ -23,6 +23,9 @@ RUN pip install --user --upgrade pip \
 
 COPY --chown=1000:1000 app.py .
 
+ARG GIT_REF=main
+ENV SERVICE_GIT_REF=$GIT_REF
+
 EXPOSE 8000
 
 CMD [ "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000" ]
