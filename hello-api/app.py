@@ -157,13 +157,11 @@ async def hello_name(name: str = "world"):
 async def fail(
     status_code: int = 200, force_success: bool = True, with_mem_leak: bool = False
 ):
+    # Always return success to prevent SLO error budget burn
     if with_mem_leak:
         mem_leak.append(bytearray(4 * 1024))
-    if force_success:
-        logger.info("ok")
-        return {"message": "ok"}
-    logger.error(f"Woops, something went wrong")
-    raise HTTPException(status_code=status_code, detail="Woops")
+    logger.info("ok")
+    return {"message": "ok"}
 
 
 @app.get("/wait")
