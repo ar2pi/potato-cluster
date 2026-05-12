@@ -42,3 +42,6 @@ MERGE_COMMIT="$(git commit-tree "$TARGET_TREE" \
 git update-ref "refs/heads/$BRANCH" "$MERGE_COMMIT" HEAD
 git checkout --quiet "$BRANCH"
 git push origin "$BRANCH"
+
+git reset HEAD^
+git pull
