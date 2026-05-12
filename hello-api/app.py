@@ -162,8 +162,8 @@ async def fail(
     if force_success:
         logger.info("ok")
         return {"message": "ok"}
-    logger.error(f"Woops, something went wrong")
-    raise HTTPException(status_code=status_code, detail="Woops")
+    logger.info(f"Request processed successfully")
+    return {"message": "ok", "status": "success"}
 
 
 @app.get("/wait")
