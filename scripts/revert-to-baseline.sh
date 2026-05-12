@@ -21,23 +21,32 @@ git fetch --quiet origin "$BRANCH"
 git checkout "$BRANCH"
 git pull --ff-only --quiet origin "$BRANCH"
 
-CURRENT_TREE="$(git rev-parse "HEAD^{tree}")"
-TARGET_TREE="$(git rev-parse "${TARGET_COMMIT}^{tree}")"
-
-if [ "$CURRENT_TREE" = "$TARGET_TREE" ]; then
+# Drift check ignores scripts/ — we don't want to revert chaos automation itself.
+if git diff --quiet "$TARGET_COMMIT" HEAD -- . ':(exclude)scripts'; then
   exit 0
 fi
 
 SHORT="$(git rev-parse --short "$TARGET_COMMIT")"
-echo "Drift detected on $BRANCH — merging baseline $SHORT to restore tree"
+TARGET_TREE="$(git rev-parse "${TARGET_COMMIT}^{tree}")"
+echo "Drift detected on $BRANCH (outside scripts/) — merging baseline $SHORT to restore tree"
 
-# tree    = baseline tree (this is what restores the files)
+# Build a tree that = baseline tree, except scripts/ is taken from current HEAD.
+# Done by reading the baseline into a scratch index, dropping scripts/, then
+# overlaying HEAD's scripts/ at that prefix.
+TMP_INDEX="$(mktemp)"
+trap 'rm -f "$TMP_INDEX"' EXIT
+GIT_INDEX_FILE="$TMP_INDEX" git read-tree "$TARGET_TREE"
+GIT_INDEX_FILE="$TMP_INDEX" git rm --cached -r --quiet --ignore-unmatch -- scripts
+GIT_INDEX_FILE="$TMP_INDEX" git read-tree --prefix=scripts/ HEAD:scripts
+NEW_TREE="$(GIT_INDEX_FILE="$TMP_INDEX" git write-tree)"
+
+# tree    = baseline tree with current scripts/ preserved
 # parent1 = current HEAD (so the new commit is a fast-forward of $BRANCH)
 # parent2 = baseline commit (records the merge in history)
-MERGE_COMMIT="$(git commit-tree "$TARGET_TREE" \
+MERGE_COMMIT="$(git commit-tree "$NEW_TREE" \
   -p HEAD \
   -p "$TARGET_COMMIT" \
-  -m "revert: merge baseline $SHORT to restore tree on $BRANCH")"
+  -m "revert: merge baseline $SHORT to restore tree on $BRANCH (scripts/ preserved)")"
 
 git update-ref "refs/heads/$BRANCH" "$MERGE_COMMIT" HEAD
 git checkout --quiet "$BRANCH"
