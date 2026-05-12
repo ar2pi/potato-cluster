@@ -12,7 +12,7 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-TARGET_COMMIT="65156eb294f55c274a1d079e39a3d76ffb9a1602"
+TARGET_COMMIT="dd9387878313a2acd1ec0cb186eb19f1cf41b82d"
 BRANCH="${BRANCH:-main}"
 
 cd "$REPO_DIR"

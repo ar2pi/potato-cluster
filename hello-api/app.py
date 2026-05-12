@@ -155,7 +155,7 @@ async def hello_name(name: str = "world"):
 
 @app.get("/fail")
 async def fail(
-    status_code: int = 200, force_success: bool = True, with_mem_leak: bool = False
+    status_code: int = 500, force_success: bool = False, with_mem_leak: bool = False
 ):
     if with_mem_leak:
         mem_leak.append(bytearray(4 * 1024))
