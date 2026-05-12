@@ -159,11 +159,8 @@ async def fail(
 ):
     if with_mem_leak:
         mem_leak.append(bytearray(4 * 1024))
-    if force_success:
-        logger.info("ok")
-        return {"message": "ok"}
-    logger.error(f"Woops, something went wrong")
-    raise HTTPException(status_code=status_code, detail="Woops")
+    logger.info("ok")
+    return {"message": "ok"}
 
 
 @app.get("/wait")
