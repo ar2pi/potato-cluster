@@ -154,16 +154,11 @@ async def hello_name(name: str = "world"):
 
 
 @app.get("/fail")
-async def fail(
-    status_code: int = 500, force_success: bool = False, with_mem_leak: bool = False
-):
+async def fail(with_mem_leak: bool = False):
     if with_mem_leak:
         mem_leak.append(bytearray(4 * 1024))
-    if force_success:
-        logger.info("ok")
-        return {"message": "ok"}
-    logger.error(f"Woops, something went wrong")
-    raise HTTPException(status_code=status_code, detail="Woops")
+    logger.info("Test endpoint called - returning success")
+    return {"message": "Test endpoint - returns 200 OK", "status": "success"}
 
 
 @app.get("/wait")
