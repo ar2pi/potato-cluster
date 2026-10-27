@@ -1,8 +1,20 @@
 import http from 'k6/http';
-import { check } from 'k6';
+import { check, sleep } from 'k6';
+import { Counter } from 'k6/metrics';
 import { randomIntBetween, randomItem } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8000';
+
+// Retries with exponential backoff + full jitter for idempotent GETs.
+// Only transport errors/timeouts (status 0) and 502/503/504 are retried.
+// Every attempt is still recorded in http_req_failed, so retries don't hide errors.
+const MAX_RETRIES = parseInt(__ENV.MAX_RETRIES || '3', 10);
+const BACKOFF_BASE_MS = parseInt(__ENV.BACKOFF_BASE_MS || '100', 10);
+const BACKOFF_FACTOR = parseFloat(__ENV.BACKOFF_FACTOR || '2');
+const BACKOFF_MAX_MS = parseInt(__ENV.BACKOFF_MAX_MS || '2000', 10);
+const RETRYABLE_STATUSES = [0, 502, 503, 504];
+
+const retries = new Counter('http_req_retries');
 
 // Bounded label cardinality for /hello/{name} — keeps Prometheus happy
 // while still producing variation in route labels / span attributes.
@@ -81,8 +93,20 @@ export const options = {
   },
 };
 
-function get(path, tags) {
-  return http.get(`${BASE_URL}${path}`, { tags, timeout: '10s' });
+function backoffMs(attempt) {
+  const ceiling = Math.min(BACKOFF_MAX_MS, BACKOFF_BASE_MS * Math.pow(BACKOFF_FACTOR, attempt));
+  return Math.random() * ceiling;
+}
+
+function get(path, tags, retry = true) {
+  const url = `${BASE_URL}${path}`;
+  let res = http.get(url, { tags, timeout: '10s' });
+  for (let attempt = 0; retry && attempt < MAX_RETRIES && RETRYABLE_STATUSES.includes(res.status); attempt++) {
+    retries.add(1, tags);
+    sleep(backoffMs(attempt) / 1000);
+    res = http.get(url, { tags, timeout: '10s' });
+  }
+  return res;
 }
 
 function hitHello() {
@@ -107,9 +131,10 @@ function hitSyncWait(ms) {
 }
 
 // /fail is intentional traffic — tagged so it doesn't pollute the user-facing SLO.
+// Not retried: its 5xx are injected on purpose, and retrying would multiply them.
 function hitFail(status, leak = false) {
   const qs = `status_code=${status}${leak ? '&with_mem_leak=1' : ''}`;
-  get(`/fail?${qs}`, { endpoint: 'fail', sli: 'error_injection', expected_status: String(status) });
+  get(`/fail?${qs}`, { endpoint: 'fail', sli: 'error_injection', expected_status: String(status) }, false);
 }
 
 function pickWeighted(weights) {
