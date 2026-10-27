@@ -225,6 +225,11 @@ done
 k9s -n hello-api -c pods
 ```
 
+GET requests are retried on transport errors/timeouts and 502/503/504 with exponential backoff and full jitter
+(`/fail` is never retried). Every attempt still counts toward `http_req_failed`; retries are counted in `http_req_retries`.
+Tune with `MAX_RETRIES` (default 3, `0` disables), `BACKOFF_BASE_MS` (100), `BACKOFF_FACTOR` (2) and `BACKOFF_MAX_MS` (2000),
+e.g. `k6 run -e MAX_RETRIES=0 k6/loadtest.js`.
+
 - [k6 Prometheus dashboard](https://grafana.com/grafana/dashboards/19665-k6-prometheus/)
 
 ### NGINX exporter
